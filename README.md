@@ -16,8 +16,8 @@ transforms.
 Dependencies
 ------------
 
-| [ParSeq](https://github.com/kklmn/ParSeq) -- the framework package.
-| [silx](https://github.com/silx-kit/silx) -- is used for plotting and Qt imports.
+- [ParSeq](https://github.com/kklmn/ParSeq) -- the framework package.
+- [silx](https://github.com/silx-kit/silx) -- is used for plotting and Qt imports.
 
 How to use
 ----------
