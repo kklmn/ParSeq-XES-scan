@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 __author__ = "Konstantin Klementiev"
-__date__ = "13 Jun 2021"
+__date__ = "23 Jul 2021"
 # !!! SEE CODERULES.TXT !!!
 
 import numpy as np
 from silx.gui import qt
+from silx.gui.plot.actions import control as control_actions
 
 import sys; sys.path.append('..')  # analysis:ignore
 from parseq.core import singletons as csi
@@ -61,7 +62,7 @@ class Tr0Widget(PropWidget):
         # maxValueFrame = qt.QLabel()
         maxValueFrame = qt.QPushButton()
         maxValueFrame.setMinimumWidth(28)
-        maxValueFrame.setFixedHeight(17)
+        maxValueFrame.setFixedHeight(20)
         self.registerStatusLabel(maxValueFrame, 'cutoffMaxFrame')
         maxValueFrame.clicked.connect(self.gotoFrame)
         layoutL.addWidget(maxValueFrame)
@@ -218,9 +219,6 @@ class Tr0Widget(PropWidget):
                 [cX-(cY-ymin)*dX/dY, cX+(ymax-cY)*dX/dY],
                 [ymin, ymax], legend='middleLine', color='w', linestyle='-',
                 resetzoom=False)
-
-    def extraPlotSetup(self):
-        pass
 
     def extraGUISetup(self):
         nextNodeInd = list(csi.nodes.keys()).index(self.node.name) + 1
@@ -398,6 +396,8 @@ class Tr2Widget(PropWidget):
         layout.addStretch()
         self.setLayout(layout)
 
+        self.extraPlotSetup()
+
     def acceptBorders(self):
         for data in csi.selectedItems:
             borders = data.transformParams['borders']
@@ -405,6 +405,12 @@ class Tr2Widget(PropWidget):
         self.nextTr.widget.bordersUse.setEnabled(borders is not None)
         self.updateProp()
         self.nextTr.widget.setUIFromData()
+
+    def extraPlotSetup(self):
+        tb = qt.QToolBar()
+        plot = self.node.widget.plot
+        tb.addAction(control_actions.OpenGLAction(parent=tb, plot=plot))
+        plot.addToolBar(tb)
 
     def extraPlot(self):
         if len(csi.selectedItems) == 0:

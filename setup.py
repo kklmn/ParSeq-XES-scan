@@ -2,12 +2,12 @@
 from setuptools import setup
 
 long_description = u"""
-XES theta scans
-===============
+Scanning XES
+============
 
-A pipeline for the ParSeq framework (link) that implements data processing of
-XES theta scans, where the crystal (here only one) is scanned in its theta
-angle and the analyzed emission is collected by a 2D detector.
+A pipeline for the ParSeq framework that implements data processing of XES
+theta scans, where the crystal (here only one) is scanned in its theta angle
+and the analyzed emission is collected by a 2D detector.
 
 This pipeline also serves as an example for creating analysis nodes, transforms
 that connect these nodes and widgets that set options and parameters of the
@@ -25,14 +25,13 @@ How to use
 Either install ParSeq and this pipeline application by their installers or put
 their folders near by and run `python XES_scan_start.py`. You can try it with
 `--test` to load test data and/or `--noGUI` but an assumed pattern is to load
-a project file; use the test project file located at
-`parseq_XES_scan/saved/NbO2.pspj`.
+a project file; use the test project file located in `parseq_XES_scan/saved`.
 
 """
 
 setup(
     name='parseq_XES_scan',
-    version='0.1.0',
+    version='0.2.0',
     description='A pipeline for data processing of XES theta scans',
     long_description=long_description,
     long_description_content_type='text/x-rst',
