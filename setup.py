@@ -50,7 +50,7 @@ setup(
                             'data/*.*', 'doc/_images/*.*', 'saved/*.*']},
     scripts=['XES_scan_start.py'],
     install_requires=['numpy>=1.8.0', 'scipy>=0.17.0', 'matplotlib>=2.0.0',
-                      'sphinx>=1.6.2', 'h5py', 'silx'],
+                      'sphinx>=1.6.2', 'h5py', 'silx', 'hdf5plugin'],
     classifiers=['Development Status :: 3 - Alpha',
                  'Intended Audience :: Science/Research',
                  'Natural Language :: English',
