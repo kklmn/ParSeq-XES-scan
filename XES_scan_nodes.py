@@ -19,6 +19,7 @@ class Node1(cno.Node):
     arrays['xes3D'] = dict(
         raw='xes3Draw', qLabel='XES3D', qUnit='counts', role='3D',
         plotLabel=['scan axis', 'horizontal pixel', 'tangential pixel'])
+    checkShapes = ['theta', 'i0', 'xes3D[0]']
 
 
 class Node2(cno.Node):
