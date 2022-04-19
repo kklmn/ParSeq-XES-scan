@@ -31,3 +31,4 @@ csi.appSynopsis = __synopsis__
 csi.appDescription = __doc__
 csi.appAuthor = __author__
 csi.appLicense = __license__
+csi.appVersion = __version__

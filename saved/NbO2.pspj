@@ -2,29 +2,29 @@
 tree = ['20201112/entry10170', 'elastic', ['elastic_18600', 'elastic_18640']]
 
 [20201112/entry10170]
-madeOf = silx:c:\ParSeq\data\20201112.h5::/entry10170
+madeOf = silx:..\data\20201112.h5::/entry10170
 madeOf_relative = silx:..\data\20201112.h5::/entry10170
-dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:c:\\ParSeq\\data\\NbO2_Kb13_76_data_000001.h5::/entry/data/data"]}
-dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\NbO2_Kb13_76_data_000001.h5::/entry/data/data"]}
+dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\NbO2_Kb13_76_data_000001.h5::/entry/data/data"], "conversionFactors": [None, None, None]}
+dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\NbO2_Kb13_76_data_000001.h5::/entry/data/data"], "conversionFactors": [None, None, None]}
 suffix = None
 originNode = 3D theta scan
 terminalNode = None
 colorTag = 1
 color = #1f77b4
-;transform params
+;transform params:
 cutoffNeeded = True
 cutoff = 2000
 cutoffMaxBelow = 7
 cutoffMaxFrame = 44
 shearFind = True
-shear = 0.03417116742833402
+shear = 0.033509225960407354
 shearAnglesMin = -0.1
 shearAnglesMax = 0.0
 shearAnglesN = 101
 shearThreshold = 200
 shearLineLength = 60
 shearLineGap = 60
-shearLinesFound = 79
+shearLinesFound = 82
 shearLinesShow = False
 shearNeeded = True
 shearOrder = 0
@@ -35,15 +35,15 @@ bordersHullShow = False
 bordersFilterSigma = 4.2
 bordersFound = 2
 bordersShow = True
-borders = ([1, 139], [262.61937455327075, 711.3354909100838], [303.1513883254857, 725.3489788558934], 0.30754411301390444, -79.767042607252, 0.3268611737613905, -98.08841861546335)
+borders = ([0.7992200463140723, 1.4999796609234026], [259.3678084927142, 714.5870569706404], [300.0919854955552, 728.408381685824], 0.0015393892436499428, 0.3999520317713299, 0.0016360793582556096, 0.3082457432668526)
 bordersAreExternal = False
-bordersExternalShow = False
+bordersExternalShow = True
 bordersUse = True
 subtractLine = True
 calibrationFind = True
 calibrationData = {'base': ['elastic_18600', 'elastic_18640'], 'energy': [18600.0, 18640.0], 'DCM': ['Si111', 'Si111'], 'FWHM': [3.5248946589308616, 3.530951479329815]}
 calibrationHalfPeakWidthSteps = 7
-calibrationPoly = [-191.58448430094188, 18820.856999841217]
+calibrationPoly = [-191.71211407066343, 18820.97462083782]
 
 [elastic]
 colorPolicy = loop1
@@ -51,16 +51,16 @@ colorTag = 0
 colorAutoUpdate = False
 
 [elastic_18600]
-madeOf = silx:c:\ParSeq\data\20201112.h5::/entry10190
+madeOf = silx:..\data\20201112.h5::/entry10190
 madeOf_relative = silx:..\data\20201112.h5::/entry10190
-dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:c:\\ParSeq\\data\\Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"]}
-dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"]}
+dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"], "conversionFactors": [None, None, None]}
+dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"], "conversionFactors": [None, None, None]}
 suffix = None
 originNode = 3D theta scan
 terminalNode = None
 colorTag = 1
 color = #1f77b4
-;transform params
+;transform params:
 cutoffNeeded = True
 cutoff = 2000
 cutoffMaxBelow = 35
@@ -84,7 +84,7 @@ bordersHullShow = False
 bordersFilterSigma = 4.2
 bordersFound = 0
 bordersShow = True
-borders = ([1, 139], [262.61937455327075, 711.3354909100838], [303.1513883254857, 725.3489788558934], 0.30754411301390444, -79.767042607252, 0.3268611737613905, -98.08841861546335)
+borders = ([0.7992200463140723, 1.4999796609234026], [259.3678084927142, 714.5870569706404], [300.0919854955552, 728.408381685824], 0.0015393892436499428, 0.3999520317713299, 0.0016360793582556096, 0.3082457432668526)
 bordersAreExternal = True
 bordersExternalShow = True
 bordersUse = True
@@ -95,16 +95,16 @@ calibrationHalfPeakWidthSteps = 7
 calibrationPoly = [-191.58448430094188, 18820.856999841217]
 
 [elastic_18640]
-madeOf = silx:c:\ParSeq\data\20201112.h5::/entry10191
+madeOf = silx:..\data\20201112.h5::/entry10191
 madeOf_relative = silx:..\data\20201112.h5::/entry10191
-dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:c:\\ParSeq\\data\\Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"]}
-dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"]}
+dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"], "conversionFactors": [None, None, None]}
+dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"], "conversionFactors": [None, None, None]}
 suffix = None
 originNode = 3D theta scan
 terminalNode = None
 colorTag = 1
 color = #ff7f0e
-;transform params
+;transform params:
 cutoffNeeded = True
 cutoff = 2000
 cutoffMaxBelow = 6
@@ -128,7 +128,7 @@ bordersHullShow = False
 bordersFilterSigma = 4.2
 bordersFound = 0
 bordersShow = True
-borders = ([1, 139], [262.61937455327075, 711.3354909100838], [303.1513883254857, 725.3489788558934], 0.30754411301390444, -79.767042607252, 0.3268611737613905, -98.08841861546335)
+borders = ([0.7992200463140723, 1.4999796609234026], [259.3678084927142, 714.5870569706404], [300.0919854955552, 728.408381685824], 0.0015393892436499428, 0.3999520317713299, 0.0016360793582556096, 0.3082457432668526)
 bordersAreExternal = True
 bordersExternalShow = True
 bordersUse = True
@@ -143,7 +143,7 @@ floating = [False, False, False, False]
 active = 1D energy XES
 
 [Geometry]
-mainWindow = (333, 131, 1439, 720)
+mainWindow = (333, 131, 1483, 720)
 3D theta scan = ()
 corrected 3D theta scan = ()
 2D theta scan = ()
