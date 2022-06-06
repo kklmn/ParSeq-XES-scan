@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 __author__ = "Konstantin Klementiev"
-__date__ = "13 Jun 2021"
+__date__ = "19 Apr 2022"
 # !!! SEE CODERULES.TXT !!!
 
 import numpy as np
 
 from scipy.integrate import trapz
-from skimage import transform as sktransform
-from skimage import feature as skfeature
-from skimage import morphology as skmorphology
 
 import sys; sys.path.append('..')  # analysis:ignore
 from parseq.core import transforms as ctr
+# from parseq.core import spectra as csp
+from parseq.core import singletons as csi
+from parseq.core import commons as cco
 from parseq.utils import math as uma
 from parseq.third_party import xrt
 
@@ -25,152 +25,99 @@ def _line(xs, ys):
 
 
 class Tr0(ctr.Transform):
-    name = 'mask Eiger and find shear'
+    name = 'mask Eiger and set ROIs'
     defaultParams = dict(
-        cutoffNeeded=True, cutoff=2000, cutoffMaxBelow=0, cutoffMaxFrame=0,
-        shearFind=False, shear=0, shearAnglesMin=-0.1, shearAnglesMax=0.0,
-        shearAnglesN=101, shearThreshold=200, shearLineLength=60,
-        shearLineGap=60, shearLinesFound=0, shearLinesShow=False)
+        cutoffNeeded=True, cutoff=2100, cutoffMaxBelow=0, cutoffMaxFrame=0,
+        roiKeyFrames={0: [
+            dict(kind='ArcROI', name='arc1', center=(0, 500),
+                 innerRadius=500, outerRadius=510, startAngle=-1, endAngle=1),
+            ]})
+
     nThreads = cpus
-    # nProcesses = cpus
+    nProcesses = cpus
     # inArrays and outArrays needed only for multiprocessing/multithreading:
     inArrays = ['xes3Draw']
-    outArrays = ['xes3D']
+    outArrays = ['xes3D', 'xesN']
 
     @staticmethod
     def run_main(data):
+
+        def get_roi_mask(geom, xs, ys):
+            if geom['kind'] == 'ArcROI':
+                x, y = geom['center']
+                r1, r2 = geom['innerRadius'], geom['outerRadius']
+                dist2 = (xs-x)**2 + (ys-y)**2
+                return (dist2 >= r1**2) & (dist2 <= r2**2)
+            elif geom['kind'] == 'RectangleROI':
+                x, y = geom['origin']
+                w, h = geom['size']
+                return (xs >= x) & (xs <= x+w) & (ys >= y) & (ys <= y+h)
+            else:
+                raise ValueError('unsupported ROI type')
+
         dtparams = data.transformParams
-        outDict = {}
 
         data.xes3D = np.array(data.xes3Draw)
+        sh = data.xes3D.shape
         if dtparams['cutoffNeeded']:
             cutoff = dtparams['cutoff']
             data.xes3D[data.xes3D > cutoff] = 0
             dtparams['cutoffMaxBelow'] = data.xes3D.max()
             dtparams['cutoffMaxFrame'] = np.unravel_index(
-                data.xes3D.argmax(), data.xes3D.shape)[0]
+                data.xes3D.argmax(), sh)[0]
 
-        shearLines = []
-        if dtparams['shearFind']:
-            image = data.xes3D[dtparams['cutoffMaxFrame'], :, :]
-            testAngles = np.linspace(dtparams['shearAnglesMin'],
-                                     dtparams['shearAnglesMax'],
-                                     dtparams['shearAnglesN'])
-            shearLines = sktransform.probabilistic_hough_line(
-                image, threshold=dtparams['shearThreshold'],
-                line_length=dtparams['shearLineLength'],
-                theta=testAngles, line_gap=dtparams['shearLineGap'])
-            nLines = len(shearLines)
-            dtparams['shearLinesFound'] = nLines
-            if nLines > 0:
-                cX = sum(s[0][0]+s[1][0] for s in shearLines)*0.5 / nLines
-                cY = sum(s[0][1]+s[1][1] for s in shearLines)*0.5 / nLines
-                dX = sum(s[1][0]-s[0][0] for s in shearLines) * 1.
-                dY = sum(s[1][1]-s[0][1] for s in shearLines) * 1.
-                outDict['shearMiddleLine'] = (cX, cY, dX, dY)
-                dtparams['shear'] = dX / dY
+        roiKeyFrames = dtparams['roiKeyFrames']  # dict {key: [geoms]}
+        if len(roiKeyFrames) == 0:
+            data.xesN = np.zeros((1, sh[0]))
+            data.xesN[:] = data.xes3D.sum(axis=(1, 2))
+        else:
+            xs = np.arange(sh[2])[None, :]
+            ys = np.arange(sh[1])[:, None]
+            geoms = list(roiKeyFrames.values())[0]
+            data.xesN = np.zeros((len(geoms), sh[0]))
+            if len(roiKeyFrames) == 1:
+                for ig, geom in enumerate(geoms):
+                    if geom['use']:
+                        mask = get_roi_mask(geom, xs, ys)
+                        stackedMask = np.broadcast_to(mask, sh)
+                        data.xesN[ig, :] = np.where(
+                            stackedMask, data.xes3D, data.xes3D*0).sum(
+                                axis=(1, 2))
+                    else:
+                        data.xesN[ig, :] = data.xes3D.sum(axis=(1, 2))
+            else:  # len(dtparams['roiKeyFrames']) >= 2:
+                for i in range(sh[0]):
+                    geoms = uma.interpolateFrames(dtparams['roiKeyFrames'], i)
+                    for ig, geom in enumerate(geoms):
+                        if geom['use']:
+                            mask = get_roi_mask(geom, xs, ys)
+                            data.xesN[ig, i] = data.xes3D[i, :, :][mask].sum()
+                        else:
+                            data.xesN[ig, i] = data.xes3D[i, :, :].sum()
+        return True
+
+    def run_post(self, dataItems, runDownstream=True):
+        toGive = 'theta', 'xesN'
+        for dataItem in dataItems:
+            nROIs = dataItem.xesN.shape[0]
+            if nROIs == 1:
+                dataItem.xes0 = np.array(dataItem.xesN[0, :])
             else:
-                dtparams['shear'] = 0.
-        outDict['shearLines'] = shearLines
+                dataItem.branch_out(
+                    nROIs, toGive, '3D theta scan', '1D energy XES',
+                    [Tr1.name], 'roi')
+                for iit, it in enumerate(dataItem.branch.childItems):
+                    it.xes0 = np.array(dataItem.xesN[iit, :])
 
-        return outDict
+        super().run_post(dataItems, runDownstream)
 
 
 class Tr1(ctr.Transform):
-    name = 'shear and normalize'
-    defaultParams = dict(shearNeeded=False, shearOrder=0, shouldNormalize=True)
-    nThreads = cpus
-    # nProcesses = cpus
-    # inArrays and outArrays needed only for multiprocessing/multithreading:
-    inArrays = ['xes3D', 'i0']
-    outArrays = ['xes3Dcorr']
-
-    @staticmethod
-    def run_main(data):
-        dtparams = data.transformParams
-
-        shear = dtparams['shear']
-        data.xes3Dcorr = np.array(data.xes3D, dtype=float)
-        if dtparams['shearNeeded'] and shear > 0:
-            # Create affine transform
-            afftr = sktransform.AffineTransform(
-                np.array([[1, shear, 0], [0, 1, 0], [0, 0, 1]]))
-            # Apply transform to image data,
-            # don't know how to do it with one warp without the loop
-            for i in range(data.xes3D.shape[0]):
-                data.xes3Dcorr[i, :, :] = sktransform.warp(
-                    data.xes3D[i, :, :], afftr, order=dtparams['shearOrder'],
-                    preserve_range=True)
-
-        if dtparams['shouldNormalize']:
-            data.xes3Dcorr *= data.i0.max() / data.i0[:, None, None]
-
-        return True
-
-
-class Tr2(ctr.Transform):
-    name = 'get XES band'
+    name = 'calibrate energy'
     defaultParams = dict(
-        bordersFind=False, bordersHullLevel=0.24, bordersHullShow=False,
-        bordersFilterSigma=4.2, bordersFound=0, bordersShow=True, borders=None,
-        bordersAreExternal=False, bordersExternalShow=False)
-    nThreads = cpus
-    # nProcesses = cpus
-    # inArrays and outArrays needed only for multiprocessing/multithreading:
-    inArrays = ['xes3Dcorr', ]
-    outArrays = ['xes2D', 'xes', 'band_edgesLine']
-
-    @staticmethod
-    def run_main(data):
-        dtparams = data.transformParams
-        data.xes2D = data.xes3Dcorr.sum(axis=1)
-        data.xes = data.xes2D.sum(axis=1)
-
-        if dtparams['bordersFind']:
-            ys = [1, data.xes2D.shape[0]-2]
-            scaled = data.xes2D - data.xes2D.min()
-            scaled /= float(scaled.max())
-            chull = skmorphology.convex_hull_image(
-                scaled > dtparams['bordersHullLevel'])
-            # astype('float32'):
-            # https://stackoverflow.com/questions/32529149/trouble-with-canny-edge-detector-returning-black-image
-            edges = skfeature.canny(
-                chull.astype('float32'), dtparams['bordersFilterSigma'])
-            data.band_edgesLine = np.argwhere(edges).T
-
-            h, theta, d = sktransform.hough_line(edges)
-            _, angles, dists = sktransform.hough_line_peaks(
-                h, theta, d, num_peaks=2)
-
-            dtparams['bordersFound'] = len(angles)
-            if len(angles) > 1:
-                for i, (angle, dist) in enumerate(zip(angles, dists)):
-                    xs = [(dist-y*np.sin(angle))/np.cos(angle) - 1 for y in ys]
-                    k, b = _line(xs, ys)
-                    if i == 0:
-                        xs0, k0, b0 = xs, k, b
-                    else:
-                        xs1, k1, b1 = xs, k, b
-                if b1 > b0:
-                    xsTop, kTop, bTop = xs1, k1, b1
-                    xsBot, kBot, bBot = xs0, k0, b0
-                else:
-                    xsTop, kTop, bTop = xs0, k0, b0
-                    xsBot, kBot, bBot = xs1, k1, b1
-                dtparams['borders'] = ys, xsTop, xsBot, kTop, bTop, kBot, bBot
-            else:
-                dtparams['borders'] = None
-            dtparams['bordersAreExternal'] = False
-
-        return True
-
-
-class Tr3(ctr.Transform):
-    name = 'get XES and calibrate energy'
-    defaultParams = dict(
-        bordersUse=False, subtractLine=True,
+        subtractLine=False,
         calibrationFind=False, calibrationData={},
-        calibrationHalfPeakWidthSteps=7, calibrationPoly=None)
+        calibrationHalfPeakWidthSteps=10, calibrationPoly=None)
 
     @staticmethod
     def make_calibration(data, allData):
@@ -178,20 +125,25 @@ class Tr3(ctr.Transform):
         cd = dtparams['calibrationData']
         pw = dtparams['calibrationHalfPeakWidthSteps']
 
-        tetas = []
-        for alias in cd['base']:
-            for sp in allData:
-                if sp.alias == alias:
-                    break
-            else:
-                raise ValueError
-            iel = sp.xes.argmax()
-            peak = slice(iel-pw, iel+pw+1)
-            mel = (sp.xes*sp.theta)[peak].sum() / sp.xes[peak].sum()
-            tetas.append(mel)
+        thetas = []
+        try:
+            for alias in cd['base']:
+                for sp in allData:
+                    if sp.alias == alias:
+                        break
+                else:
+                    return False
+                iel = sp.xes.argmax()
+                peak = slice(iel-pw, iel+pw+1)
+                mel = (sp.xes*sp.theta)[peak].sum() / sp.xes[peak].sum()
+                thetas.append(mel)
 
-        dtparams['calibrationPoly'] = np.polyfit(tetas, cd['energy'], 1)
-        data.energy = np.polyval(dtparams['calibrationPoly'], data.theta)
+            dtparams['calibrationPoly'] = np.polyfit(thetas, cd['energy'], 1)
+            data.energy = np.polyval(dtparams['calibrationPoly'], data.theta)
+        except Exception:
+            print('calibration failed for {0}'.format(data.alias))
+            return False
+        return True
 
     @staticmethod
     def make_rocking_curves(data, allData, rcBand=40):
@@ -232,20 +184,12 @@ class Tr3(ctr.Transform):
 
     @staticmethod
     def run_main(data, allData):
+        if csi.DEBUG_LEVEL > 50:
+            print('enter run_main() of "{0}" for {1}'.format(Tr1.name, data))
         dtparams = data.transformParams
         data.energy = data.theta
 
-        if dtparams['borders'] is not None and dtparams['bordersUse']:
-            xv, yv = np.meshgrid(np.arange(data.xes2D.shape[1]),
-                                 np.arange(data.xes2D.shape[0]))
-            kTop, bTop, kBot, bBot = dtparams['borders'][3:]
-            dataCut = np.array(data.xes2D, dtype=np.float)
-            dataCut[yv > kTop*xv + bTop] = 0
-            dataCut[yv < kBot*xv + bBot] = 0
-            data.xes = dataCut.sum(axis=1)
-        else:
-            data.xes = data.xes2D.sum(axis=1)
-
+        data.xes = np.array(data.xes0)
         if dtparams['subtractLine']:
             k0, b0 = _line([0, len(data.xes)-1], [data.xes[0], data.xes[-1]])
             data.xes -= np.arange(len(data.xes))*k0 + b0
@@ -256,15 +200,18 @@ class Tr3(ctr.Transform):
             if hasattr(sp, 'rce'):
                 del sp.rce
         if dtparams['calibrationFind'] and dtparams['calibrationData']:
-            try:
-                Tr3.make_calibration(data, allData)
-                Tr3.make_rocking_curves(data, allData)
-            except (np.linalg.LinAlgError, ValueError):
-                return
+            # try:
+            if not Tr1.make_calibration(data, allData):
+                return False
+            Tr1.make_rocking_curves(data, allData)
+            # except (np.linalg.LinAlgError, ValueError):
+            #     return
 
         if dtparams['calibrationPoly'] is not None:
             data.energy = np.polyval(dtparams['calibrationPoly'], data.theta)
 
         data.fwhm = uma.fwhm(data.energy, data.xes)
+        if csi.DEBUG_LEVEL > 50:
+            print('exitrun_main() of "{0}" for {1}'.format(Tr1.name, data))
 
         return True

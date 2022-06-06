@@ -24,7 +24,9 @@ def main(withTestData=True, withGUI=True):
         mainWindow = MainWindowParSeq()
         mainWindow.show()
 
-        app.exec_()
+        result = app.exec()
+        app.deleteLater()
+        sys.exit(result)
     else:
         import matplotlib.pyplot as plt
         plt.suptitle(list(csi.nodes.values())[-1].name)
@@ -38,6 +40,7 @@ def main(withTestData=True, withGUI=True):
 
 
 if __name__ == '__main__':
+    # csi.DEBUG_LEVEL = 150
     withTestData = '--test' in sys.argv
     withGUI = '--noGUI' not in sys.argv
     main(withTestData=withTestData, withGUI=withGUI)
