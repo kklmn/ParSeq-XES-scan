@@ -41,31 +41,34 @@ def load_test_data():
     transformParams0 = dict(
         cutoffNeeded=True, cutoff=2000,
         roiKeyFrames={
-            39: [{'kind': 'ArcROI', 'name': 'arc1',
+            39: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True,
                   'center': [-69458.74467694364, 2514.344096415457],
                   'innerRadius': 69898.54600825749,
                   'outerRadius': 69924.21592691503,
                   'startAngle': -0.035933206772440426,
                   'endAngle': -0.020805842090804154}],
-            60: [{'kind': 'ArcROI', 'name': 'arc1',
+            60: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True,
                   'center': [-69396.6557601711, 2511.4697514301224],
                   'innerRadius': 69899.07446737455,
                   'outerRadius': 69923.68746779796,
                   'startAngle': -0.035933206772440426,
                   'endAngle': -0.020805842090804154}]},
         subtractLine=True)
+
     spectrum0 = rootItem.insert_data(
         scanName, dataFormat=dataFormat0, copyTransformParams=False,
-        transformParams=transformParams0)[0]
+        transformParams=transformParams0, runDownstream=True)[0]
     group0 = rootItem.insert_item('elastic', colorPolicy='loop1')
     dataFormat1 = dict(dataSource=h5Format+[dataNameEl1])
     group0.insert_data(
         scanNameEl1, dataFormat=dataFormat1, alias='elastic_18600',
-        copyTransformParams=False, transformParams=transformParams0)
+        copyTransformParams=False, transformParams=transformParams0,
+        runDownstream=True)
     dataFormat2 = dict(dataSource=h5Format+[dataNameEl2])
     group0.insert_data(
         scanNameEl2, dataFormat=dataFormat2, alias='elastic_18640',
-        copyTransformParams=False, transformParams=transformParams0)
+        copyTransformParams=False, transformParams=transformParams0,
+        runDownstream=True)
 
     tr = list(csi.transforms.values())[-1]
 
