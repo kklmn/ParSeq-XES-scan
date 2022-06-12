@@ -107,6 +107,14 @@ class Tr0Widget(PropWidget):
         dtparams = data.transformParams
         self.roiWidget.setKeyFrames(dict(dtparams['roiKeyFrames']))
 
+    def extraPlot(self):
+        if len(csi.selectedItems) == 0:
+            return
+        data = csi.selectedItems[0]
+        if hasattr(data, 'ixmin') and self.roiWidget.autoZoom.isChecked():
+            lims = data.ixmin, data.ixmax
+            self.node.widget.plot._plot.getXAxis().setLimits(*lims)
+
 
 class Tr1Widget(PropWidget):
     u"""

@@ -1,19 +1,25 @@
-[Data]
+[Root]
 tree = ['20201112/entry10170', 'elastic', ['elastic_18600', 'elastic_18640']]
+colorPolicy = individual
+color = m
+colorAutoUpdate = False
 
 [20201112/entry10170]
-madeOf = silx:..\data\20201112.h5::/entry10170
-madeOf_relative = silx:..\data\20201112.h5::/entry10170
-dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\NbO2_Kb13_76_data_000001.h5::/entry/data/data"], "conversionFactors": [None, None, None]}
-dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\NbO2_Kb13_76_data_000001.h5::/entry/data/data"], "conversionFactors": [None, None, None]}
+madeOf = silx:C:/ParSeq/parseq_XES_scan/data/20201112.h5::/entry10170
+madeOf_relative = silx:../data/20201112.h5::/entry10170
+dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan/data/NbO2_Kb13_76_data_000001.h5::/entry/data/data"]}
+dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../data/NbO2_Kb13_76_data_000001.h5::/entry/data/data"]}
 suffix = None
 originNodeName = 3D theta scan
 terminalNodeName = None
+transformNames = each
 colorTag = 1
-color = #1f77b4
+color = #ff0000
+colorIndividual = #ff0000
+plotProps = {'3D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'symbolsize': 2, 'linewidth': 1.3, 'linestyle': '-'}}}
 ;transform params:
 cutoffNeeded = True
-cutoff = 2000
+cutoff = 50
 cutoffMaxBelow = 7
 cutoffMaxFrame = 44
 roiKeyFrames = {39: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69458.74467694364, 2514.344096415457], 'innerRadius': 69898.54600825749, 'outerRadius': 69924.21592691503, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}], 60: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69396.6557601711, 2511.4697514301224], 'innerRadius': 69899.07446737455, 'outerRadius': 69923.68746779796, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}]}
@@ -29,15 +35,17 @@ colorTag = 0
 colorAutoUpdate = False
 
 [elastic_18600]
-madeOf = silx:..\data\20201112.h5::/entry10190
-madeOf_relative = silx:..\data\20201112.h5::/entry10190
-dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"], "conversionFactors": [None, None, None]}
-dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"], "conversionFactors": [None, None, None]}
+madeOf = silx:C:/ParSeq/parseq_XES_scan/data/20201112.h5::/entry10190
+madeOf_relative = silx:../data/20201112.h5::/entry10190
+dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan/data/Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"]}
+dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../data/Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"]}
 suffix = None
 originNodeName = 3D theta scan
 terminalNodeName = None
+transformNames = each
 colorTag = 1
 color = #1f77b4
+plotProps = {'3D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'symbolsize': 2, 'linewidth': 1.3, 'linestyle': '-'}}}
 ;transform params:
 cutoffNeeded = True
 cutoff = 2000
@@ -51,15 +59,17 @@ calibrationHalfPeakWidthSteps = 10
 calibrationPoly = [-187.71048352078654, 18816.546963644338]
 
 [elastic_18640]
-madeOf = silx:..\data\20201112.h5::/entry10191
-madeOf_relative = silx:..\data\20201112.h5::/entry10191
-dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"], "conversionFactors": [None, None, None]}
-dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:..\\data\\Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"], "conversionFactors": [None, None, None]}
+madeOf = silx:C:/ParSeq/parseq_XES_scan/data/20201112.h5::/entry10191
+madeOf_relative = silx:../data/20201112.h5::/entry10191
+dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan/data/Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"]}
+dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../data/Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"]}
 suffix = None
 originNodeName = 3D theta scan
 terminalNodeName = None
+transformNames = each
 colorTag = 1
 color = #ff7f0e
+plotProps = {'3D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'symbolsize': 2, 'linewidth': 1.3, 'linestyle': '-'}}}
 ;transform params:
 cutoffNeeded = True
 cutoff = 2000
@@ -74,10 +84,10 @@ calibrationPoly = [-187.71048352078654, 18816.546963644338]
 
 [Docks]
 floating = [False, False]
-active = 1D energy XES
+active = 3D theta scan
 
 [Geometry]
-mainWindow = (403, 149, 1481, 720)
+mainWindow = (253, 75, 1481, 720)
 3D theta scan = ()
 1D energy XES = ()
 

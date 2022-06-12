@@ -37,7 +37,7 @@ class Tr0(ctr.Transform):
     nProcesses = cpus
     # inArrays and outArrays needed only for multiprocessing/multithreading:
     inArrays = ['xes3Draw']
-    outArrays = ['xes3D', 'xesN']
+    outArrays = ['xes3D', 'xesN', 'ixmin', 'ixmax']
 
     @staticmethod
     def run_main(data):
@@ -75,10 +75,15 @@ class Tr0(ctr.Transform):
             ys = np.arange(sh[1])[:, None]
             geoms = list(roiKeyFrames.values())[0]
             data.xesN = np.zeros((len(geoms), sh[0]))
+            ixmin, ixmax = (sh[2] + 1, 0) if any(
+                [geom['use'] for geom in geoms]) else (0, sh[2] + 1)
             if len(roiKeyFrames) == 1:
                 for ig, geom in enumerate(geoms):
                     if geom['use']:
                         mask = get_roi_mask(geom, xs, ys)
+                        _, indx = np.nonzero(mask)
+                        ixmin = min(ixmin, indx.min())
+                        ixmax = max(ixmax, indx.max())
                         stackedMask = np.broadcast_to(mask, sh)
                         data.xesN[ig, :] = np.where(
                             stackedMask, data.xes3D, data.xes3D*0).sum(
@@ -91,9 +96,14 @@ class Tr0(ctr.Transform):
                     for ig, geom in enumerate(geoms):
                         if geom['use']:
                             mask = get_roi_mask(geom, xs, ys)
+                            _, indx = np.nonzero(mask)
+                            ixmin = min(ixmin, indx.min())
+                            ixmax = max(ixmax, indx.max())
                             data.xesN[ig, i] = data.xes3D[i, :, :][mask].sum()
                         else:
                             data.xesN[ig, i] = data.xes3D[i, :, :].sum()
+            data.ixmin = ixmin
+            data.ixmax = ixmax
         return True
 
     def run_post(self, dataItems, runDownstream=True):
@@ -194,11 +204,11 @@ class Tr1(ctr.Transform):
             k0, b0 = _line([0, len(data.xes)-1], [data.xes[0], data.xes[-1]])
             data.xes -= np.arange(len(data.xes))*k0 + b0
 
-        for sp in allData:
-            if hasattr(sp, 'rc'):
-                del sp.rc
-            if hasattr(sp, 'rce'):
-                del sp.rce
+        # for sp in allData:
+        #     if hasattr(sp, 'rc'):
+        #         del sp.rc
+        #     if hasattr(sp, 'rce'):
+        #         del sp.rce
         if dtparams['calibrationFind'] and dtparams['calibrationData']:
             # try:
             if not Tr1.make_calibration(data, allData):
