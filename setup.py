@@ -5,9 +5,9 @@ long_description = u"""
 Scanning XES
 ============
 
-A pipeline for the ParSeq framework that implements data processing of XES
-theta scans, where the crystal (here only one) is scanned in its theta angle
-and the analyzed emission is collected by a 2D detector.
+A pipeline for the [ParSeq framework](https://github.com/kklmn/ParSeq) that
+implements data processing of XES theta scans, where the crystals are scanned
+in their theta angle and the analyzed emission is collected by a 2D detector.
 
 This pipeline also serves as an example for creating analysis nodes, transforms
 that connect these nodes and widgets that set options and parameters of the
@@ -31,7 +31,7 @@ a project file; use the test project file located in `parseq_XES_scan/saved`.
 
 setup(
     name='parseq_XES_scan',
-    version='0.2.0',
+    version='0.6.0',
     description='A pipeline for data processing of XES theta scans',
     long_description=long_description,
     long_description_content_type='text/x-rst',

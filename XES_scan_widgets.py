@@ -4,6 +4,8 @@ __date__ = "19 Apr 2022"
 # !!! SEE CODERULES.TXT !!!
 
 # import numpy as np
+from functools import partial
+
 from silx.gui import qt
 # from silx.gui.plot.actions import control as control_actions
 
@@ -54,23 +56,39 @@ class Tr0Widget(PropWidget):
         layoutL.addWidget(cutoff)
         layoutC.addLayout(layoutL)
 
-        layoutL = qt.QHBoxLayout()
-        maxLabel = qt.QLabel('max signal = ')
-        layoutL.addWidget(maxLabel)
+        layoutP = qt.QHBoxLayout()
+        maxLabel = qt.QLabel('max pixel = ')
+        layoutP.addWidget(maxLabel)
         maxValue = qt.QLabel()
-        self.registerStatusLabel(maxValue, 'cutoffMaxBelow')
-        layoutL.addWidget(maxValue)
+        self.registerStatusLabel(maxValue, 'cutoffMaxPixel')
+        layoutP.addWidget(maxValue)
         maxLabelFrame = qt.QLabel('in frame ')
-        layoutL.addWidget(maxLabelFrame)
+        layoutP.addWidget(maxLabelFrame)
         # maxValueFrame = qt.QLabel()
         maxValueFrame = qt.QPushButton()
         maxValueFrame.setMinimumWidth(28)
         maxValueFrame.setFixedHeight(20)
-        self.registerStatusLabel(maxValueFrame, 'cutoffMaxFrame')
-        maxValueFrame.clicked.connect(self.gotoFrame)
-        layoutL.addWidget(maxValueFrame)
-        # layoutL.addStretch()
-        layoutC.addLayout(layoutL)
+        self.registerStatusLabel(maxValueFrame, 'cutoffFrameWithMaxPixel')
+        maxValueFrame.clicked.connect(partial(self.gotoFrame, 'pixel'))
+        layoutP.addWidget(maxValueFrame)
+        layoutC.addLayout(layoutP)
+
+        layoutF = qt.QHBoxLayout()
+        maxLabel = qt.QLabel('max sum = ')
+        layoutF.addWidget(maxLabel)
+        maxValue = qt.QLabel()
+        self.registerStatusLabel(maxValue, 'cutoffMaxFrame')
+        layoutF.addWidget(maxValue)
+        maxLabelFrame = qt.QLabel('in frame ')
+        layoutF.addWidget(maxLabelFrame)
+        # maxValueFrame = qt.QLabel()
+        maxValueFrame = qt.QPushButton()
+        maxValueFrame.setMinimumWidth(28)
+        maxValueFrame.setFixedHeight(20)
+        self.registerStatusLabel(maxValueFrame, 'cutoffFrameWithMaxFrame')
+        maxValueFrame.clicked.connect(partial(self.gotoFrame, 'frame'))
+        layoutF.addWidget(maxValueFrame)
+        layoutC.addLayout(layoutF)
 
         cutoffPanel.setLayout(layoutC)
         self.registerPropGroup(
@@ -87,20 +105,25 @@ class Tr0Widget(PropWidget):
         layout.addStretch()
         self.setLayout(layout)
 
+        self.roiWidget.roiManager.sigRoiChanged.connect(self.countRoi)
+
     def accept(self):
         self.roiWidget.syncRoi()
         self.updateProp('roiKeyFrames',  # 'transformParams.roiKeyFrames',
                         dict(self.roiWidget.keyFrameGeometries))
 
-    def gotoFrame(self):
+    def gotoFrame(self, what='frame'):
         if len(csi.selectedItems) == 0:
             return
         data = csi.selectedItems[0]
-        frame = data.transformParams['cutoffMaxFrame']
+        if what == 'pixel':
+            frame = data.transformParams['cutoffFrameWithMaxPixel']
+        elif what == 'frame':
+            frame = data.transformParams['cutoffFrameWithMaxFrame']
         self.node.widget.plot._browser.setValue(frame)
 
     def extraSetUIFromData(self):
-        self.gotoFrame()
+        # self.gotoFrame()
         if len(csi.selectedItems) == 0:
             return
         data = csi.selectedItems[0]
@@ -114,6 +137,15 @@ class Tr0Widget(PropWidget):
         if hasattr(data, 'ixmin') and self.roiWidget.autoZoom.isChecked():
             lims = data.ixmin, data.ixmax
             self.node.widget.plot._plot.getXAxis().setLimits(*lims)
+
+    def countRoi(self):
+        if len(csi.selectedItems) == 0:
+            return
+        data = csi.selectedItems[0]
+        try:
+            self.roiWidget.updateCounts(data.xes3D)
+        except Exception:
+            pass
 
 
 class Tr1Widget(PropWidget):
@@ -134,10 +166,49 @@ class Tr1Widget(PropWidget):
 
         layout = qt.QVBoxLayout()
 
-        subtract = qt.QCheckBox('subtract global line')
+        subtractPanel = qt.QGroupBox(self)
+        subtractPanel.setFlat(False)
+        subtractPanel.setTitle('subtract')
+        subtractPanel.setCheckable(True)
         self.registerPropWidget(
-            subtract, subtract.text(), 'subtractLine', self.name)
-        layout.addWidget(subtract)
+            subtractPanel, subtractPanel.title(), 'subtract', self.name)
+
+        layoutS = qt.QHBoxLayout()
+        subtractLine = qt.QRadioButton('base line')
+        layoutS.addWidget(subtractLine)
+        subtractMinimum = qt.QRadioButton('minimum')
+        layoutS.addWidget(subtractMinimum)
+        subtractCustom = qt.QRadioButton('custom')
+        subtractCustom.clicked.connect(self.setSubtractCustom)
+        layoutS.addWidget(subtractCustom)
+        self.subtractCustomValue = qt.QLineEdit()
+        layoutS.addWidget(self.subtractCustomValue)
+        subtractPanel.setLayout(layoutS)
+        layout.addWidget(subtractPanel)
+        self.registerExclusivePropGroup(
+            subtractPanel, (subtractLine, subtractMinimum, subtractCustom),
+            'subtract kind', 'subtractKind', self.name)
+
+        normalizePanel = qt.QGroupBox(self)
+        normalizePanel.setFlat(False)
+        normalizePanel.setTitle('normalize')
+        normalizePanel.setCheckable(True)
+        self.registerPropWidget(
+            normalizePanel, normalizePanel.title(), 'normalize', self.name)
+
+        layoutN = qt.QHBoxLayout()
+        normalizeMaximum = qt.QRadioButton('maximum')
+        layoutN.addWidget(normalizeMaximum)
+        normalizeCustom = qt.QRadioButton('custom')
+        normalizeCustom.clicked.connect(self.setNormalizeCustom)
+        layoutN.addWidget(normalizeCustom)
+        self.normalizeCustomValue = qt.QLineEdit()
+        layoutN.addWidget(self.normalizeCustomValue)
+        normalizePanel.setLayout(layoutN)
+        layout.addWidget(normalizePanel)
+        self.registerExclusivePropGroup(
+            normalizePanel, (normalizeMaximum, normalizeCustom),
+            'normalize kind', 'normalizeKind', self.name)
 
         calibrationPanel = qt.QGroupBox(self)
         calibrationPanel.setFlat(False)
@@ -169,6 +240,8 @@ class Tr1Widget(PropWidget):
         self.calibrationUse.setEnabled(False)
         layout.addWidget(self.calibrationUse)
 
+        self.calibrateEnergyWidget.clearButton.clicked.connect(self.clear)
+
         layout.addStretch()
         self.setLayout(layout)
         # self.setSizePolicy(qt.QSizePolicy.Minimum, qt.QSizePolicy.Minimum)
@@ -182,6 +255,35 @@ class Tr1Widget(PropWidget):
         if dtparams['calibrationFind']:
             self.calibrateEnergyWidget.setCalibrationData(data)
         self.calibrationUse.setChecked(dtparams['calibrationPoly'] is not None)
+
+        if dtparams['subtract'] and dtparams['subtractKind'] == 2:
+            self.subtractCustomValue.setText(dtparams['subtractValue'])
+        else:
+            self.subtractCustomValue.setText('')
+
+    def setSubtractCustom(self, **kv):
+        try:
+            val = float(self.subtractCustomValue.text())
+        except Exception:
+            self.subtractCustomValue.setText('0')
+            val = 0
+
+        for data in csi.selectedItems:
+            dtparams = data.transformParams
+            dtparams['subtractValue'] = val
+        self.updateProp()
+
+    def setNormalizeCustom(self, **kv):
+        try:
+            val = float(self.normalizeCustomValue.text())
+        except Exception:
+            self.normalizeCustomValue.setText('0')
+            val = 1
+
+        for data in csi.selectedItems:
+            dtparams = data.transformParams
+            dtparams['normalizeValue'] = val
+        self.updateProp()
 
     def autoSet(self):
         calibs = []
@@ -214,6 +316,15 @@ class Tr1Widget(PropWidget):
                 dtparams['calibrationPoly'] = None
         self.updateProp()
         self.calibrationUse.setChecked(dtparams['calibrationPoly'] is not None)
+
+    def clear(self):
+        for data in csi.selectedItems:
+            dtparams = data.transformParams
+            dtparams['calibrationPoly'] = None
+            if hasattr(data, 'rce'):
+                del data.rce
+                del data.rc
+        self.calibrationUse.setChecked(False)
 
     def extraPlot(self):
         plot = self.node.widget.plot

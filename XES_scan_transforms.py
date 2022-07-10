@@ -27,34 +27,20 @@ def _line(xs, ys):
 class Tr0(ctr.Transform):
     name = 'mask Eiger and set ROIs'
     defaultParams = dict(
-        cutoffNeeded=True, cutoff=2100, cutoffMaxBelow=0, cutoffMaxFrame=0,
+        cutoffNeeded=True, cutoff=2100, cutoffMaxPixel=0, cutoffMaxFrame=0,
+        cutoffFrameWithMaxPixel=0, cutoffFrameWithMaxFrame=0,
         roiKeyFrames={0: [
-            dict(kind='ArcROI', name='arc1', center=(0, 500),
+            dict(kind='ArcROI', name='arc1', use=False, center=(0, 500),
                  innerRadius=500, outerRadius=510, startAngle=-1, endAngle=1),
             ]})
 
     nThreads = cpus
-    nProcesses = cpus
     # inArrays and outArrays needed only for multiprocessing/multithreading:
     inArrays = ['xes3Draw']
     outArrays = ['xes3D', 'xesN', 'ixmin', 'ixmax']
 
     @staticmethod
     def run_main(data):
-
-        def get_roi_mask(geom, xs, ys):
-            if geom['kind'] == 'ArcROI':
-                x, y = geom['center']
-                r1, r2 = geom['innerRadius'], geom['outerRadius']
-                dist2 = (xs-x)**2 + (ys-y)**2
-                return (dist2 >= r1**2) & (dist2 <= r2**2)
-            elif geom['kind'] == 'RectangleROI':
-                x, y = geom['origin']
-                w, h = geom['size']
-                return (xs >= x) & (xs <= x+w) & (ys >= y) & (ys <= y+h)
-            else:
-                raise ValueError('unsupported ROI type')
-
         dtparams = data.transformParams
 
         data.xes3D = np.array(data.xes3Draw)
@@ -62,9 +48,12 @@ class Tr0(ctr.Transform):
         if dtparams['cutoffNeeded']:
             cutoff = dtparams['cutoff']
             data.xes3D[data.xes3D > cutoff] = 0
-            dtparams['cutoffMaxBelow'] = data.xes3D.max()
-            dtparams['cutoffMaxFrame'] = np.unravel_index(
+            dtparams['cutoffMaxPixel'] = data.xes3D.max()
+            dtparams['cutoffFrameWithMaxPixel'] = np.unravel_index(
                 data.xes3D.argmax(), sh)[0]
+            frames = data.xes3D.sum(axis=(1, 2))
+            dtparams['cutoffMaxFrame'] = frames.max()
+            dtparams['cutoffFrameWithMaxFrame'] = frames.argmax()
 
         roiKeyFrames = dtparams['roiKeyFrames']  # dict {key: [geoms]}
         if len(roiKeyFrames) == 0:
@@ -80,11 +69,11 @@ class Tr0(ctr.Transform):
             if len(roiKeyFrames) == 1:
                 for ig, geom in enumerate(geoms):
                     if geom['use']:
-                        mask = get_roi_mask(geom, xs, ys)
-                        _, indx = np.nonzero(mask)
+                        m = uma.get_roi_mask(geom, xs, ys)
+                        _, indx = np.nonzero(m)
                         ixmin = min(ixmin, indx.min())
                         ixmax = max(ixmax, indx.max())
-                        stackedMask = np.broadcast_to(mask, sh)
+                        stackedMask = np.broadcast_to(m, sh)
                         data.xesN[ig, :] = np.where(
                             stackedMask, data.xes3D, data.xes3D*0).sum(
                                 axis=(1, 2))
@@ -92,14 +81,17 @@ class Tr0(ctr.Transform):
                         data.xesN[ig, :] = data.xes3D.sum(axis=(1, 2))
             else:  # len(dtparams['roiKeyFrames']) >= 2:
                 for i in range(sh[0]):
-                    geoms = uma.interpolateFrames(dtparams['roiKeyFrames'], i)
+                    geoms = uma.interpolate_frames(dtparams['roiKeyFrames'], i)
                     for ig, geom in enumerate(geoms):
                         if geom['use']:
-                            mask = get_roi_mask(geom, xs, ys)
-                            _, indx = np.nonzero(mask)
-                            ixmin = min(ixmin, indx.min())
-                            ixmax = max(ixmax, indx.max())
-                            data.xesN[ig, i] = data.xes3D[i, :, :][mask].sum()
+                            m = uma.get_roi_mask(geom, xs, ys)
+                            _, indx = np.nonzero(m)
+                            if len(indx) > 0:
+                                ixmin = min(ixmin, indx.min())
+                                ixmax = max(ixmax, indx.max())
+                                data.xesN[ig, i] = data.xes3D[i, :, :][m].sum()
+                            else:
+                                data.xesN[ig, i] = 0
                         else:
                             data.xesN[ig, i] = data.xes3D[i, :, :].sum()
             data.ixmin = ixmin
@@ -107,17 +99,19 @@ class Tr0(ctr.Transform):
         return True
 
     def run_post(self, dataItems, runDownstream=True):
-        toGive = 'theta', 'xesN'
+        toGive = 'theta', 'xesN', 'i0'
         for dataItem in dataItems:
             nROIs = dataItem.xesN.shape[0]
             if nROIs == 1:
-                dataItem.xes0 = np.array(dataItem.xesN[0, :])
+                dataItem.xes0 = np.array(dataItem.xesN[0, :]) / dataItem.i0
+                dataItem.xes = np.array(dataItem.xes0)
             else:
                 dataItem.branch_out(
                     nROIs, toGive, '3D theta scan', '1D energy XES',
                     [Tr1.name], 'roi')
                 for iit, it in enumerate(dataItem.branch.childItems):
-                    it.xes0 = np.array(dataItem.xesN[iit, :])
+                    it.xes0 = np.array(dataItem.xesN[iit, :]) / dataItem.i0
+                    it.xes = np.array(it.xes0)
 
         super().run_post(dataItems, runDownstream)
 
@@ -125,7 +119,8 @@ class Tr0(ctr.Transform):
 class Tr1(ctr.Transform):
     name = 'calibrate energy'
     defaultParams = dict(
-        subtractLine=False,
+        subtract=False, subtractKind=0, subtractValue=0,
+        normalize=False, normalizeKind=0, normalizeValue=1,
         calibrationFind=False, calibrationData={},
         calibrationHalfPeakWidthSteps=10, calibrationPoly=None)
 
@@ -137,21 +132,25 @@ class Tr1(ctr.Transform):
 
         thetas = []
         try:
-            for alias in cd['base']:
+            for alias, sliceStr in zip(cd['base'], cd['slice']):
                 for sp in allData:
                     if sp.alias == alias:
                         break
                 else:
                     return False
-                iel = sp.xes.argmax()
-                peak = slice(iel-pw, iel+pw+1)
-                mel = (sp.xes*sp.theta)[peak].sum() / sp.xes[peak].sum()
+                slice_ = cco.parse_slice_str(sliceStr)
+                xes = sp.xes[slice_]
+                theta = sp.theta[slice_]
+                iel = xes.argmax()
+                peak = slice(max(iel-pw, 0), iel+pw+1)
+                mel = (xes*theta)[peak].sum() / xes[peak].sum()
                 thetas.append(mel)
 
             dtparams['calibrationPoly'] = np.polyfit(thetas, cd['energy'], 1)
             data.energy = np.polyval(dtparams['calibrationPoly'], data.theta)
-        except Exception:
-            print('calibration failed for {0}'.format(data.alias))
+        except Exception as e:
+            print('calibration failed for {0}:'.format(data.alias))
+            print(e)
             return False
         return True
 
@@ -198,11 +197,22 @@ class Tr1(ctr.Transform):
             print('enter run_main() of "{0}" for {1}'.format(Tr1.name, data))
         dtparams = data.transformParams
         data.energy = data.theta
+        data.xes[:] = data.xes0
 
-        data.xes = np.array(data.xes0)
-        if dtparams['subtractLine']:
-            k0, b0 = _line([0, len(data.xes)-1], [data.xes[0], data.xes[-1]])
-            data.xes -= np.arange(len(data.xes))*k0 + b0
+        if dtparams['subtract']:
+            if dtparams['subtractKind'] == 0:  # baseline
+                k, b = _line([0, len(data.xes)-1], [data.xes[0], data.xes[-1]])
+                data.xes -= np.arange(len(data.xes))*k + b
+            elif dtparams['subtractKind'] == 1:  # min
+                data.xes -= data.xes.min()
+            elif dtparams['subtractKind'] == 2:  # custom
+                data.xes -= dtparams['subtractValue']
+
+        if dtparams['normalize']:
+            if dtparams['normalizeKind'] == 0:  # max
+                data.xes /= data.xes.max()
+            elif dtparams['normalizeKind'] == 1:  # custom
+                data.xes /= dtparams['normalizeValue']
 
         # for sp in allData:
         #     if hasattr(sp, 'rc'):

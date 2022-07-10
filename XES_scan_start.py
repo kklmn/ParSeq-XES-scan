@@ -8,7 +8,7 @@ import parseq.core.singletons as csi
 import parseq_XES_scan as myapp
 
 
-def main(withTestData=True, withGUI=True):
+def main(withTestData=True, withGUI=True, loadProject=None):
     myapp.make_pipeline(withGUI)
 
     if withTestData:
@@ -16,13 +16,17 @@ def main(withTestData=True, withGUI=True):
 
     if withGUI:
         node0 = list(csi.nodes.values())[0]
-        node0.fileNameFilters = ['*.h5', '*.dat']
+        node0.fileNameFilters = ['*.h5', '*.nxs']
 
         from silx.gui import qt
         from parseq.gui.mainWindow import MainWindowParSeq
+        # os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1" # "1" is "yes", not a factor
+        # os.environ["QT_SCALE_FACTOR"] = "1.25"
         app = qt.QApplication(sys.argv)
         mainWindow = MainWindowParSeq()
         mainWindow.show()
+        if loadProject:
+            mainWindow.load_project(loadProject)
 
         result = app.exec()
         app.deleteLater()
@@ -43,4 +47,9 @@ if __name__ == '__main__':
     # csi.DEBUG_LEVEL = 150
     withTestData = '--test' in sys.argv
     withGUI = '--noGUI' not in sys.argv
-    main(withTestData=withTestData, withGUI=withGUI)
+    loadProject = None
+    if '--project' in sys.argv:
+        ind = sys.argv.index('--project')
+        if len(sys.argv) > ind+1:
+            loadProject = sys.argv[ind+1]
+    main(withTestData=withTestData, withGUI=withGUI, loadProject=loadProject)

@@ -2,16 +2,15 @@ Scanning XES
 ============
 
 A pipeline for the [ParSeq framework](https://github.com/kklmn/ParSeq) that
-implements data processing of XES theta scans, where the crystal (here only
-one) is scanned in its theta angle and the analyzed emission is collected by
-a 2D detector.
+implements data processing of XES theta scans, where the crystals are scanned
+in their theta angle and the analyzed emission is collected by a 2D detector.
 
 This pipeline also serves as an example for creating analysis nodes, transforms
 that connect these nodes and widgets that set options and parameters of the
 transforms.
 
 <p align="center">
-  <img src="doc/_images/node4.png" width=1200 />
+  <img src="doc/_images/node2.png" width=1200 />
 </p>
 
 Dependencies
