@@ -128,6 +128,8 @@ class Tr1(ctr.Transform):
     def make_calibration(data, allData):
         dtparams = data.transformParams
         cd = dtparams['calibrationData']
+        if 'slice' not in cd:  # added later
+            cd['slice'] = [':'] * len(cd['base'])
         pw = dtparams['calibrationHalfPeakWidthSteps']
 
         thetas = []
