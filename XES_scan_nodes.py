@@ -26,7 +26,7 @@ class Node2(cno.Node):
     name = '1D energy XES'
     arrays = OrderedDict()
     arrays['energy'] = dict(qUnit='eV', role='x')
-    arrays['xes'] = dict(qLabel='XES', qUnit='a.u.', role='yleft')
+    arrays['xes'] = dict(qLabel='XES', qUnit='counts', role='yleft')
     arrays['fwhm'] = dict(
         qLabel='FWHM', qUnit='eV', role='0D', plotLabel='{0:.2f}')
     auxArrays = [['rce', 'rc']]

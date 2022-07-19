@@ -103,14 +103,16 @@ class Tr0(ctr.Transform):
         for dataItem in dataItems:
             nROIs = dataItem.xesN.shape[0]
             if nROIs == 1:
-                dataItem.xes0 = np.array(dataItem.xesN[0, :]) / dataItem.i0
+                dataItem.xes0 = np.array(dataItem.xesN[0, :]) *\
+                    dataItem.i0.max() / dataItem.i0
                 dataItem.xes = np.array(dataItem.xes0)
             else:
                 dataItem.branch_out(
                     nROIs, toGive, '3D theta scan', '1D energy XES',
                     [Tr1.name], 'roi')
                 for iit, it in enumerate(dataItem.branch.childItems):
-                    it.xes0 = np.array(dataItem.xesN[iit, :]) / dataItem.i0
+                    it.xes0 = np.array(dataItem.xesN[iit, :]) *\
+                        dataItem.i0.max() / dataItem.i0
                     it.xes = np.array(it.xes0)
 
         super().run_post(dataItems, runDownstream)

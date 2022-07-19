@@ -20,14 +20,21 @@ plotProps = {'3D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'sy
 ;transform params:
 cutoffNeeded = True
 cutoff = 50
-cutoffMaxBelow = 7
-cutoffMaxFrame = 44
+cutoffMaxPixel = 7
+cutoffMaxFrame = 17238
+cutoffFrameWithMaxPixel = 44
+cutoffFrameWithMaxFrame = 44
 roiKeyFrames = {39: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69458.74467694364, 2514.344096415457], 'innerRadius': 69898.54600825749, 'outerRadius': 69924.21592691503, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}], 60: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69396.6557601711, 2511.4697514301224], 'innerRadius': 69899.07446737455, 'outerRadius': 69923.68746779796, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}]}
-subtractLine = True
+subtract = False
+subtractKind = 0
+subtractValue = 0
+normalize = False
+normalizeKind = 0
+normalizeValue = 1
 calibrationFind = True
-calibrationData = {'base': ['elastic_18600', 'elastic_18640'], 'energy': [18600.0, 18640.0], 'DCM': ['Si111', 'Si111'], 'FWHM': [3.5248946589308616, 3.530951479329815]}
+calibrationData = {'base': ['elastic_18600', 'elastic_18640'], 'energy': [18600.0, 18640.0], 'DCM': ['Si111', 'Si111'], 'FWHM': [3.5248946589308616, 3.530951479329815], 'slice': [':', ':']}
 calibrationHalfPeakWidthSteps = 10
-calibrationPoly = [-187.71048352078654, 18816.546963644338]
+calibrationPoly = [-188.62861856360865, 18817.631292411403]
 
 [elastic]
 colorPolicy = loop1
@@ -49,10 +56,17 @@ plotProps = {'3D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'sy
 ;transform params:
 cutoffNeeded = True
 cutoff = 2000
-cutoffMaxBelow = 35
-cutoffMaxFrame = 58
+cutoffMaxPixel = 35
+cutoffMaxFrame = 5399
+cutoffFrameWithMaxPixel = 58
+cutoffFrameWithMaxFrame = 70
 roiKeyFrames = {39: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69458.74467694364, 2514.344096415457], 'innerRadius': 69898.54600825749, 'outerRadius': 69924.21592691503, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}], 60: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69396.6557601711, 2511.4697514301224], 'innerRadius': 69899.07446737455, 'outerRadius': 69923.68746779796, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}]}
-subtractLine = True
+subtract = False
+subtractKind = 0
+subtractValue = 0
+normalize = False
+normalizeKind = 0
+normalizeValue = 1
 calibrationFind = False
 calibrationData = {}
 calibrationHalfPeakWidthSteps = 10
@@ -73,10 +87,17 @@ plotProps = {'3D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'sy
 ;transform params:
 cutoffNeeded = True
 cutoff = 2000
-cutoffMaxBelow = 6
-cutoffMaxFrame = 30
+cutoffMaxPixel = 6
+cutoffMaxFrame = 5315
+cutoffFrameWithMaxPixel = 30
+cutoffFrameWithMaxFrame = 30
 roiKeyFrames = {39: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69458.74467694364, 2514.344096415457], 'innerRadius': 69898.54600825749, 'outerRadius': 69924.21592691503, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}], 60: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69396.6557601711, 2511.4697514301224], 'innerRadius': 69899.07446737455, 'outerRadius': 69923.68746779796, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}]}
-subtractLine = True
+subtract = False
+subtractKind = 0
+subtractValue = 0
+normalize = False
+normalizeKind = 0
+normalizeValue = 1
 calibrationFind = False
 calibrationData = {}
 calibrationHalfPeakWidthSteps = 10
@@ -87,7 +108,7 @@ floating = [False, False]
 active = 3D theta scan
 
 [Geometry]
-mainWindow = (253, 75, 1481, 720)
+mainWindow = maximized
 3D theta scan = ()
 1D energy XES = ()
 
