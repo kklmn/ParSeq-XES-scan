@@ -7,8 +7,8 @@ colorAutoUpdate = False
 [20201112/entry10170]
 madeOf = silx:C:/ParSeq/parseq_XES_scan/data/20201112.h5::/entry10170
 madeOf_relative = silx:../data/20201112.h5::/entry10170
-dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan/data/NbO2_Kb13_76_data_000001.h5::/entry/data/data"]}
-dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../data/NbO2_Kb13_76_data_000001.h5::/entry/data/data"]}
+dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan/data/NbO2_Kb13_76_data_000001.h5::/entry/data/data"], "metadata": "title, start_time, end_time"}
+dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../data/NbO2_Kb13_76_data_000001.h5::/entry/data/data"], "metadata": "title, start_time, end_time"}
 suffix = None
 originNodeName = 3D theta scan
 terminalNodeName = None
@@ -37,8 +37,8 @@ colorAutoUpdate = False
 [elastic_18600]
 madeOf = silx:C:/ParSeq/parseq_XES_scan/data/20201112.h5::/entry10190
 madeOf_relative = silx:../data/20201112.h5::/entry10190
-dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan/data/Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"]}
-dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../data/Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"]}
+dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan/data/Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"], "metadata": "title, start_time, end_time"}
+dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../data/Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"], "metadata": "title, start_time, end_time"}
 suffix = None
 originNodeName = 3D theta scan
 terminalNodeName = None
@@ -61,8 +61,8 @@ calibrationPoly = [-187.71048352078654, 18816.546963644338]
 [elastic_18640]
 madeOf = silx:C:/ParSeq/parseq_XES_scan/data/20201112.h5::/entry10191
 madeOf_relative = silx:../data/20201112.h5::/entry10191
-dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan/data/Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"]}
-dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../data/Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"]}
+dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan/data/Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"], "metadata": "title, start_time, end_time"}
+dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../data/Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"], "metadata": "title, start_time, end_time"}
 suffix = None
 originNodeName = 3D theta scan
 terminalNodeName = None
