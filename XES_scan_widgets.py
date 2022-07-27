@@ -39,8 +39,8 @@ class Tr0Widget(PropWidget):
         cutoffPanel.setFlat(False)
         cutoffPanel.setTitle('pixel value cutoff')
         cutoffPanel.setCheckable(True)
-        self.registerPropWidget(
-            cutoffPanel, cutoffPanel.title(), 'cutoffNeeded', self.name)
+        self.registerPropWidget(cutoffPanel, cutoffPanel.title(),
+                                'cutoffNeeded')
         layoutC = qt.QVBoxLayout()
 
         layoutL = qt.QHBoxLayout()
@@ -51,8 +51,8 @@ class Tr0Widget(PropWidget):
         cutoff.setMinimum(0)
         cutoff.setMaximum(int(1e8))
         cutoff.setSingleStep(100)
-        self.registerPropWidget(
-            [cutoff, cutoffLabel], cutoffLabel.text(), 'cutoff', self.name)
+        self.registerPropWidget([cutoff, cutoffLabel], cutoffLabel.text(),
+                                'cutoff')
         layoutL.addWidget(cutoff)
         layoutC.addLayout(layoutL)
 
@@ -99,7 +99,7 @@ class Tr0Widget(PropWidget):
         self.roiWidget.acceptButton.clicked.connect(self.accept)
         self.registerPropWidget(
             [self.roiWidget.table, self.roiWidget.acceptButton], 'rois',
-            'roiKeyFrames', self.name)
+            'roiKeyFrames')
         layout.addWidget(self.roiWidget)
 
         layout.addStretch()
@@ -170,9 +170,8 @@ class Tr1Widget(PropWidget):
         subtractPanel.setFlat(False)
         subtractPanel.setTitle('subtract')
         subtractPanel.setCheckable(True)
-        self.registerPropWidget(
-            subtractPanel, subtractPanel.title(), 'subtract', self.name)
-
+        self.registerPropWidget(subtractPanel, subtractPanel.title(),
+                                'subtract')
         layoutS = qt.QHBoxLayout()
         subtractLine = qt.QRadioButton('base line')
         layoutS.addWidget(subtractLine)
@@ -193,9 +192,8 @@ class Tr1Widget(PropWidget):
         normalizePanel.setFlat(False)
         normalizePanel.setTitle('normalize')
         normalizePanel.setCheckable(True)
-        self.registerPropWidget(
-            normalizePanel, normalizePanel.title(), 'normalize', self.name)
-
+        self.registerPropWidget(normalizePanel, normalizePanel.title(),
+                                'normalize')
         layoutN = qt.QHBoxLayout()
         normalizeMaximum = qt.QRadioButton('maximum')
         layoutN.addWidget(normalizeMaximum)
@@ -214,9 +212,8 @@ class Tr1Widget(PropWidget):
         calibrationPanel.setFlat(False)
         calibrationPanel.setTitle('define energy calibration')
         calibrationPanel.setCheckable(True)
-        self.registerPropWidget(
-            calibrationPanel, calibrationPanel.title(), 'calibrationFind',
-            self.name)
+        self.registerPropWidget(calibrationPanel, calibrationPanel.title(),
+                                'calibrationFind')
         layoutC = qt.QVBoxLayout()
         self.calibrateEnergyWidget = CalibrateEnergyWidget(
             self, formatStr=node.getProp('fwhm', 'plotLabel'))
@@ -228,7 +225,7 @@ class Tr1Widget(PropWidget):
         self.registerPropWidget(
             [self.calibrateEnergyWidget.acceptButton,
              self.calibrateEnergyWidget.table], 'energy calibration',
-            'calibrationPoly', self.name)
+            'calibrationPoly')
         self.registerStatusLabel(self.calibrateEnergyWidget,
                                  'transformParams.calibrationData.FWHM')
 
