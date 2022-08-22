@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 __author__ = "Konstantin Klementiev"
-__date__ = "19 Apr 2022"
+__date__ = "22 Aug 2022"
 # !!! SEE CODERULES.TXT !!!
 
-# import numpy as np
+import numpy as np
 from functools import partial
 
 from silx.gui import qt
-# from silx.gui.plot.actions import control as control_actions
+from silx.gui.plot.actions import control as control_actions
 
 import sys; sys.path.append('..')  # analysis:ignore
 from parseq.core import singletons as csi
 from parseq.core import commons as cco
 from parseq.gui.propWidget import PropWidget
-from parseq.gui.roi import RoiWidget
 from parseq.gui.calibrateEnergy import CalibrateEnergyWidget
+from parseq.gui.roi import RoiWidget
 
 
 class Tr0Widget(PropWidget):
@@ -27,8 +27,6 @@ class Tr0Widget(PropWidget):
     test link: `MAX IV Laboratory <https://www.maxiv.lu.se/>`_
 
     """
-
-    name = 'mask Eiger and set ROIs'
 
     def __init__(self, parent=None, node=None):
         super().__init__(parent, node)
@@ -56,11 +54,16 @@ class Tr0Widget(PropWidget):
         layoutL.addWidget(cutoff)
         layoutC.addLayout(layoutL)
 
+        cutoffPanel.setLayout(layoutC)
+        self.registerPropGroup(
+            cutoffPanel, [cutoff, cutoffPanel], 'cutoff properties')
+        layout.addWidget(cutoffPanel)
+
         layoutP = qt.QHBoxLayout()
         maxLabel = qt.QLabel('max pixel = ')
         layoutP.addWidget(maxLabel)
         maxValue = qt.QLabel()
-        self.registerStatusLabel(maxValue, 'cutoffMaxPixel')
+        self.registerStatusLabel(maxValue, 'maxPixelValue')
         layoutP.addWidget(maxValue)
         maxLabelFrame = qt.QLabel('in frame ')
         layoutP.addWidget(maxLabelFrame)
@@ -68,16 +71,16 @@ class Tr0Widget(PropWidget):
         maxValueFrame = qt.QPushButton()
         maxValueFrame.setMinimumWidth(28)
         maxValueFrame.setFixedHeight(20)
-        self.registerStatusLabel(maxValueFrame, 'cutoffFrameWithMaxPixel')
+        self.registerStatusLabel(maxValueFrame, 'frameWithMaxPixelValue')
         maxValueFrame.clicked.connect(partial(self.gotoFrame, 'pixel'))
         layoutP.addWidget(maxValueFrame)
-        layoutC.addLayout(layoutP)
+        layout.addLayout(layoutP)
 
         layoutF = qt.QHBoxLayout()
         maxLabel = qt.QLabel('max sum = ')
         layoutF.addWidget(maxLabel)
         maxValue = qt.QLabel()
-        self.registerStatusLabel(maxValue, 'cutoffMaxFrame')
+        self.registerStatusLabel(maxValue, 'maxFrameValue')
         layoutF.addWidget(maxValue)
         maxLabelFrame = qt.QLabel('in frame ')
         layoutF.addWidget(maxLabelFrame)
@@ -85,67 +88,80 @@ class Tr0Widget(PropWidget):
         maxValueFrame = qt.QPushButton()
         maxValueFrame.setMinimumWidth(28)
         maxValueFrame.setFixedHeight(20)
-        self.registerStatusLabel(maxValueFrame, 'cutoffFrameWithMaxFrame')
+        self.registerStatusLabel(maxValueFrame, 'frameWithMaxFrameValue')
         maxValueFrame.clicked.connect(partial(self.gotoFrame, 'frame'))
         layoutF.addWidget(maxValueFrame)
-        layoutC.addLayout(layoutF)
+        layout.addLayout(layoutF)
 
-        cutoffPanel.setLayout(layoutC)
-        self.registerPropGroup(
-            cutoffPanel, [cutoff, cutoffPanel], 'cutoff properties')
-        layout.addWidget(cutoffPanel)
-
-        self.roiWidget = RoiWidget(self, node.widget.plot)
-        self.roiWidget.acceptButton.clicked.connect(self.accept)
+        shearPanel = qt.QGroupBox(self)
+        shearPanel.setFlat(False)
+        shearPanel.setTitle('find shear')
+        shearPanel.setCheckable(True)
+        self.registerPropWidget(shearPanel, shearPanel.title(), 'shearFind')
+        layoutS = qt.QVBoxLayout()
+        layoutS.setContentsMargins(0, 2, 2, 2)
+        self.roiWidget = RoiWidget(self, node.widget.plot, ['ArcROI'], 1)
+        self.roiWidget.acceptButton.clicked.connect(self.acceptShear)
         self.registerPropWidget(
-            [self.roiWidget.table, self.roiWidget.acceptButton], 'rois',
-            'roiKeyFrames')
-        layout.addWidget(self.roiWidget)
+            [self.roiWidget.table, self.roiWidget.acceptButton], 'shearROI',
+            'shearROI')
+        layoutS.addWidget(self.roiWidget)
+        shearPanel.setLayout(layoutS)
+        shearPanel.setSizePolicy(qt.QSizePolicy.Minimum, qt.QSizePolicy.Fixed)
+        layout.addWidget(shearPanel)
 
         layout.addStretch()
         self.setLayout(layout)
-
-        self.roiWidget.roiManager.sigRoiChanged.connect(self.countRoi)
-
-    def accept(self):
-        self.roiWidget.syncRoi()
-        self.updateProp('roiKeyFrames',  # 'transformParams.roiKeyFrames',
-                        dict(self.roiWidget.keyFrameGeometries))
 
     def gotoFrame(self, what='frame'):
         if len(csi.selectedItems) == 0:
             return
         data = csi.selectedItems[0]
         if what == 'pixel':
-            frame = data.transformParams['cutoffFrameWithMaxPixel']
+            frame = data.transformParams['frameWithMaxPixelValue']
         elif what == 'frame':
-            frame = data.transformParams['cutoffFrameWithMaxFrame']
+            frame = data.transformParams['frameWithMaxFrameValue']
         self.node.widget.plot._browser.setValue(frame)
 
+    def acceptShear(self):
+        # self.nextTr.toNode.widget.transformWidget.setUIFromData()
+        # self.nextTr.widget.setUIFromData()  # the same as the line above
+        self.roiWidget.syncRoi()
+        self.updateProp('shearROI',  # 'transformParams.shearROI',
+                        self.roiWidget.getCurrentRoi())
+
+    # def extraPlot(self):
+    #     if len(csi.selectedItems) == 0:
+    #         return
+    #     data = csi.selectedItems[0]
+    #     if not self.node.widget.shouldPlotItem(data):
+    #         return
+    #     dtparams = data.transformParams
+    #     if dtparams['shearFind'] and hasattr(data, 'shearY'):
+    #         self.node.widget.plot._plot.addCurve(
+    #             data.shearX, data.shearY,
+    #             linestyle=' ', symbol='.', color='g',
+    #             legend='shearLine', resetzoom=False)
+
+    def extraGUISetup(self):
+        nextNodeInd = list(csi.nodes.keys()).index(self.node.name) + 1
+        nextNodeName = list(csi.nodes.keys())[nextNodeInd]
+        nextNode = csi.nodes[nextNodeName]
+        self.node.widget.plot.sigFrameChanged.connect(
+            nextNode.widget.plot._browser.setValue)
+
     def extraSetUIFromData(self):
-        # self.gotoFrame()
-        if len(csi.selectedItems) == 0:
-            return
-        data = csi.selectedItems[0]
-        dtparams = data.transformParams
-        self.roiWidget.setKeyFrames(dict(dtparams['roiKeyFrames']))
-
-    def extraPlot(self):
-        if len(csi.selectedItems) == 0:
-            return
-        data = csi.selectedItems[0]
-        if hasattr(data, 'ixmin') and self.roiWidget.autoZoom.isChecked():
-            lims = data.ixmin, data.ixmax
-            self.node.widget.plot._plot.getXAxis().setLimits(*lims)
-
-    def countRoi(self):
+        self.gotoFrame()
         if len(csi.selectedItems) == 0:
             return
         data = csi.selectedItems[0]
         try:
-            self.roiWidget.updateCounts(data.xes3D)
+            # to display roi counts:
+            self.roiWidget.dataToCount = data.xes3D
         except Exception:
             pass
+        dtparams = data.transformParams
+        self.roiWidget.setRois(dict(dtparams['shearROI']))
 
 
 class Tr1Widget(PropWidget):
@@ -159,54 +175,159 @@ class Tr1Widget(PropWidget):
 
     """
 
-    name = 'calibrate energy'
+    def __init__(self, parent=None, node=None, ):
+        super().__init__(parent, node)
+        layout = qt.QVBoxLayout()
+
+        checkBoxShearUse = qt.QCheckBox('apply shear shift')
+        self.registerPropWidget(
+            checkBoxShearUse, checkBoxShearUse.text(), 'shearUse')
+        layout.addWidget(checkBoxShearUse)
+
+        checkBoxNormalizeUse = qt.QCheckBox('normalize to I0')
+        self.registerPropWidget(
+            checkBoxNormalizeUse, checkBoxNormalizeUse.text(), 'normalizeUse')
+        layout.addWidget(checkBoxNormalizeUse)
+
+        layout.addStretch()
+        self.setLayout(layout)
+
+    def extraGUISetup(self):
+        prevNodeInd = list(csi.nodes.keys()).index(self.node.name) - 1
+        prevNodeName = list(csi.nodes.keys())[prevNodeInd]
+        prevNode = csi.nodes[prevNodeName]
+        self.node.widget.plot.sigFrameChanged.connect(
+            prevNode.widget.plot._browser.setValue)
+
+
+class Tr2Widget(PropWidget):
+    u"""
+    Help page under construction
+
+    .. image:: _images/mickey-rtfm.gif
+       :width: 309
+
+    test link: `MAX IV Laboratory <https://www.maxiv.lu.se/>`_
+
+    """
 
     def __init__(self, parent=None, node=None):
         super().__init__(parent, node)
 
         layout = qt.QVBoxLayout()
 
-        subtractPanel = qt.QGroupBox(self)
-        subtractPanel.setFlat(False)
-        subtractPanel.setTitle('subtract')
-        subtractPanel.setCheckable(True)
-        self.registerPropWidget(subtractPanel, subtractPanel.title(),
-                                'subtract')
-        layoutS = qt.QHBoxLayout()
-        subtractLine = qt.QRadioButton('base line')
-        layoutS.addWidget(subtractLine)
-        subtractMinimum = qt.QRadioButton('minimum')
-        layoutS.addWidget(subtractMinimum)
-        subtractCustom = qt.QRadioButton('custom')
-        subtractCustom.clicked.connect(self.setSubtractCustom)
-        layoutS.addWidget(subtractCustom)
-        self.subtractCustomValue = qt.QLineEdit()
-        layoutS.addWidget(self.subtractCustomValue)
-        subtractPanel.setLayout(layoutS)
-        layout.addWidget(subtractPanel)
-        self.registerExclusivePropGroup(
-            subtractPanel, (subtractLine, subtractMinimum, subtractCustom),
-            'subtract kind', 'subtractKind', self.name)
+        bandPanel = qt.QGroupBox(self)
+        bandPanel.setFlat(False)
+        bandPanel.setTitle(u'find θ–2θ band')
+        bandPanel.setCheckable(True)
+        layoutB = qt.QVBoxLayout()
+        layoutB.setContentsMargins(0, 2, 2, 2)
+        layoutW = qt.QHBoxLayout()
+        wLabel = qt.QLabel('width')
+        layoutW.addWidget(wLabel)
+        width = qt.QDoubleSpinBox()
+        width.setMinimum(-1000)
+        width.setMaximum(1000)
+        width.setDecimals(3)
+        width.setSingleStep(0.001)
+        self.registerPropWidget([width, wLabel], wLabel.text(), 'bandWidth')
+        layoutW.addWidget(width)
+        layoutW.addStretch()
+        layoutB.addLayout(layoutW)
+        self.roiWidget = RoiWidget(
+            self, node.widget.plot, ['CrossROI', 'PointROI'], 2)
+        self.roiWidget.acceptButton.clicked.connect(self.acceptBand)
+        self.registerPropWidget(
+            [self.roiWidget.table, self.roiWidget.acceptButton], 'bandROI',
+            'bandROI')
+        layoutB.addWidget(self.roiWidget)
+        bandPanel.setLayout(layoutB)
+        bandPanel.setSizePolicy(qt.QSizePolicy.Minimum, qt.QSizePolicy.Fixed)
+        layout.addWidget(bandPanel)
+        self.registerPropWidget(bandPanel, bandPanel.title(), 'bandFind')
 
-        normalizePanel = qt.QGroupBox(self)
-        normalizePanel.setFlat(False)
-        normalizePanel.setTitle('normalize')
-        normalizePanel.setCheckable(True)
-        self.registerPropWidget(normalizePanel, normalizePanel.title(),
-                                'normalize')
-        layoutN = qt.QHBoxLayout()
-        normalizeMaximum = qt.QRadioButton('maximum')
-        layoutN.addWidget(normalizeMaximum)
-        normalizeCustom = qt.QRadioButton('custom')
-        normalizeCustom.clicked.connect(self.setNormalizeCustom)
-        layoutN.addWidget(normalizeCustom)
-        self.normalizeCustomValue = qt.QLineEdit()
-        layoutN.addWidget(self.normalizeCustomValue)
-        normalizePanel.setLayout(layoutN)
-        layout.addWidget(normalizePanel)
-        self.registerExclusivePropGroup(
-            normalizePanel, (normalizeMaximum, normalizeCustom),
-            'normalize kind', 'normalizeKind', self.name)
+        layout.addStretch()
+        self.setLayout(layout)
+
+        self.extraPlotSetup()
+
+    def acceptBand(self):
+        self.roiWidget.syncRoi()
+        self.updateProp('bandROI', self.roiWidget.getRois())
+        for data in csi.selectedItems:
+            bandLine = data.transformParams['bandLine']
+            data.transformParams['bandUse'] = True
+        nextWidget = csi.nodes['1D energy XES'].widget.transformWidget
+        nextWidget.bandUse.setEnabled(bandLine is not None)
+        nextWidget.setUIFromData()
+
+    def extraPlotSetup(self):
+        tb = qt.QToolBar()
+        plot = self.node.widget.plot
+        tb.addAction(control_actions.OpenGLAction(parent=tb, plot=plot))
+        plot.addToolBar(tb)
+
+    def extraPlot(self):
+        if len(csi.selectedItems) == 0:
+            return
+        data = csi.selectedItems[0]
+        if not self.node.widget.shouldPlotItem(data):
+            return
+        dtparams = data.transformParams
+        plot = self.node.widget.plot
+
+        if dtparams['bandLine'] is not None:
+            k, b = dtparams['bandLine']
+            w = dtparams['bandWidth']
+            yb = np.array([0, data.xes2D.shape[0]-1])
+            # yb = np.array([data.theta[0], data.theta[-1]])
+            xb = (yb - b - w/2) / k
+            plot.addCurve(xb, yb, legend='topBorderLine',
+                          linestyle='-', color='r', resetzoom=False)
+            xb = (yb - b + w/2) / k
+            plot.addCurve(xb, yb, legend='bottomBorderLine',
+                          linestyle='-', color='b', resetzoom=False)
+
+    def extraSetUIFromData(self):
+        if len(csi.selectedItems) == 0:
+            return
+        data = csi.selectedItems[0]
+        # lims = data.theta.min(), data.theta.max()
+        # self.node.widget.plot.getYAxis().setLimits(*lims)
+        try:
+            # to display roi counts:
+            self.roiWidget.dataToCount = data.xes2D
+            self.roiWidget.dataToCountY = data.theta
+        except AttributeError:  # when no data have been yet selected
+            pass
+        dtparams = data.transformParams
+        self.roiWidget.setRois(dtparams['bandROI'])
+
+
+class Tr3Widget(PropWidget):
+    u"""
+    Help page under construction
+
+    .. image:: _images/mickey-rtfm.gif
+       :width: 309
+
+    test link: `MAX IV Laboratory <https://www.maxiv.lu.se/>`_
+
+    """
+
+    def __init__(self, parent=None, node=None):
+        super().__init__(parent, node)
+
+        layout = qt.QVBoxLayout()
+
+        self.bandUse = qt.QCheckBox(u'use θ–2θ band masking')
+        self.registerPropWidget(self.bandUse, self.bandUse.text(), 'bandUse')
+        self.bandUse.setEnabled(False)
+        layout.addWidget(self.bandUse)
+
+        subtract = qt.QCheckBox('subtract global line')
+        self.registerPropWidget(subtract, subtract.text(), 'subtractLine')
+        layout.addWidget(subtract)
 
         calibrationPanel = qt.QGroupBox(self)
         calibrationPanel.setFlat(False)
@@ -237,8 +358,6 @@ class Tr1Widget(PropWidget):
         self.calibrationUse.setEnabled(False)
         layout.addWidget(self.calibrationUse)
 
-        self.calibrateEnergyWidget.clearButton.clicked.connect(self.clear)
-
         layout.addStretch()
         self.setLayout(layout)
         # self.setSizePolicy(qt.QSizePolicy.Minimum, qt.QSizePolicy.Minimum)
@@ -249,57 +368,24 @@ class Tr1Widget(PropWidget):
             return
         data = csi.selectedItems[0]
         dtparams = data.transformParams
+        self.bandUse.setEnabled(dtparams['bandLine'] is not None)
+
         if dtparams['calibrationFind']:
             self.calibrateEnergyWidget.setCalibrationData(data)
         self.calibrationUse.setChecked(dtparams['calibrationPoly'] is not None)
-
-        if dtparams['subtract'] and dtparams['subtractKind'] == 2:
-            self.subtractCustomValue.setText(dtparams['subtractValue'])
-        else:
-            self.subtractCustomValue.setText('')
-
-    def setSubtractCustom(self, **kv):
-        try:
-            val = float(self.subtractCustomValue.text())
-        except Exception:
-            self.subtractCustomValue.setText('0')
-            val = 0
-
-        for data in csi.selectedItems:
-            dtparams = data.transformParams
-            dtparams['subtractValue'] = val
-        self.updateProp()
-
-    def setNormalizeCustom(self, **kv):
-        try:
-            val = float(self.normalizeCustomValue.text())
-        except Exception:
-            self.normalizeCustomValue.setText('0')
-            val = 1
-
-        for data in csi.selectedItems:
-            dtparams = data.transformParams
-            dtparams['normalizeValue'] = val
-        self.updateProp()
 
     def autoSet(self):
         calibs = []
         for group in csi.dataRootItem.get_groups():
             if 'calib' in group.alias or 'elast' in group.alias:
-                calibs = [item.alias for item in group.get_items() if
-                          csi.transforms['calibrate energy'].toNode.
-                          is_between_nodes(
-                              item.originNodeName, item.terminalNodeName)]
+                calibs = [item.alias for item in group.get_nongroups()]
                 break
         else:
             return
         for data in csi.selectedItems:
             dtparams = data.transformParams
             dtparams['calibrationData']['base'] = calibs
-            energies = cco.numbers_extract(calibs)
-            if len(energies) < len(calibs):
-                energies = [1e3] * len(calibs)
-            dtparams['calibrationData']['energy'] = energies
+            dtparams['calibrationData']['energy'] = cco.numbers_extract(calibs)
             dtparams['calibrationData']['DCM'] = ['Si111' for it in calibs]
             dtparams['calibrationData']['FWHM'] = [0 for it in calibs]
         self.calibrateEnergyWidget.setCalibrationData(data)
@@ -313,15 +399,6 @@ class Tr1Widget(PropWidget):
                 dtparams['calibrationPoly'] = None
         self.updateProp()
         self.calibrationUse.setChecked(dtparams['calibrationPoly'] is not None)
-
-    def clear(self):
-        for data in csi.selectedItems:
-            dtparams = data.transformParams
-            dtparams['calibrationPoly'] = None
-            if hasattr(data, 'rce'):
-                del data.rce
-                del data.rc
-        self.calibrationUse.setChecked(False)
 
     def extraPlot(self):
         plot = self.node.widget.plot

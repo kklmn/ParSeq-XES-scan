@@ -1,40 +1,41 @@
 [Root]
 tree = ['20201112/entry10170', 'elastic', ['elastic_18600', 'elastic_18640']]
-colorPolicy = individual
-color = m
+colorPolicy = loop1
 colorAutoUpdate = False
 
 [20201112/entry10170]
-madeOf = silx:C:/ParSeq/parseq_XES_scan/data/20201112.h5::/entry10170
-madeOf_relative = silx:../data/20201112.h5::/entry10170
-dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan/data/NbO2_Kb13_76_data_000001.h5::/entry/data/data"], "metadata": "title, start_time, end_time"}
-dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../data/NbO2_Kb13_76_data_000001.h5::/entry/data/data"], "metadata": "title, start_time, end_time"}
+madeOf = silx:C:/ParSeq/parseq_XES_scan_running_ROI/data/20201112.h5::/entry10170
+madeOf_relative = silx:../../parseq_XES_scan_running_ROI/data/20201112.h5::/entry10170
+dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan_running_ROI/data/NbO2_Kb13_76_data_000001.h5::/entry/data/data"], "conversionFactors": ["", "", ""], "metadata": "title, start_time, end_time"}
+dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../../parseq_XES_scan_running_ROI/data/NbO2_Kb13_76_data_000001.h5::/entry/data/data"], "conversionFactors": ["", "", ""], "metadata": "title, start_time, end_time"}
 suffix = None
 originNodeName = 3D theta scan
 terminalNodeName = None
 transformNames = each
 colorTag = 1
-color = #ff0000
-colorIndividual = #ff0000
-plotProps = {'3D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'symbolsize': 2, 'linewidth': 1.3, 'linestyle': '-'}}}
+color = #1f77b4
+plotProps = {'3D theta scan': {}, 'corrected 3D theta scan': {}, '2D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'symbolsize': 2, 'linewidth': 1.3, 'linestyle': '-'}}}
 ;transform params:
 cutoffNeeded = True
-cutoff = 50
-cutoffMaxPixel = 7
-cutoffMaxFrame = 17238
-cutoffFrameWithMaxPixel = 44
-cutoffFrameWithMaxFrame = 44
-roiKeyFrames = {39: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69458.74467694364, 2514.344096415457], 'innerRadius': 69898.54600825749, 'outerRadius': 69924.21592691503, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}], 60: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69396.6557601711, 2511.4697514301224], 'innerRadius': 69899.07446737455, 'outerRadius': 69923.68746779796, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}]}
-subtract = False
-subtractKind = 0
-subtractValue = 0
-normalize = False
-normalizeKind = 0
-normalizeValue = 1
+cutoff = 2100
+maxPixelValue = 7
+maxFrameValue = 17238
+frameWithMaxPixelValue = 44
+frameWithMaxFrameValue = 44
+shearFind = True
+shearROI = {'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [56078.472278332934, -1350.9838941539595], 'innerRadius': 55667.38235609611, 'outerRadius': 55691.253162620145, 'startAngle': 3.1172845063388417, 'endAngle': 3.0974150030256533}
+shearUse = True
+normalizeUse = True
+bandFind = True
+bandWidth = 0.03500000000000001
+bandLine = (0.0016406215527252517, 0.328982606489278)
+bandROI = [{'kind': 'PointROI', 'name': 'p1', 'use': True, 'pos': [375.7844990548205, 0.9455027548186785]}, {'kind': 'PointROI', 'name': 'p2', 'use': True, 'pos': [500.4964923335435, 1.1501079388750781]}]
+bandUse = True
+subtractLine = False
 calibrationFind = True
 calibrationData = {'base': ['elastic_18600', 'elastic_18640'], 'energy': [18600.0, 18640.0], 'DCM': ['Si111', 'Si111'], 'FWHM': [3.5248946589308616, 3.530951479329815], 'slice': [':', ':']}
-calibrationHalfPeakWidthSteps = 10
-calibrationPoly = [-188.62861856360865, 18817.631292411403]
+calibrationHalfPeakWidthSteps = 7
+calibrationPoly = [-190.65103159710017, 18820.034697144718]
 
 [elastic]
 colorPolicy = loop1
@@ -42,74 +43,82 @@ colorTag = 0
 colorAutoUpdate = False
 
 [elastic_18600]
-madeOf = silx:C:/ParSeq/parseq_XES_scan/data/20201112.h5::/entry10190
-madeOf_relative = silx:../data/20201112.h5::/entry10190
-dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan/data/Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"], "metadata": "title, start_time, end_time"}
-dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../data/Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"], "metadata": "title, start_time, end_time"}
+madeOf = silx:C:/ParSeq/parseq_XES_scan_running_ROI/data/20201112.h5::/entry10190
+madeOf_relative = silx:../../parseq_XES_scan_running_ROI/data/20201112.h5::/entry10190
+dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan_running_ROI/data/Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"], "conversionFactors": ["", "", ""], "metadata": "title, start_time, end_time"}
+dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../../parseq_XES_scan_running_ROI/data/Nb-elastic-18600_Kb13_92_data_000001.h5::/entry/data/data"], "conversionFactors": ["", "", ""], "metadata": "title, start_time, end_time"}
 suffix = None
 originNodeName = 3D theta scan
 terminalNodeName = None
 transformNames = each
 colorTag = 1
 color = #1f77b4
-plotProps = {'3D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'symbolsize': 2, 'linewidth': 1.3, 'linestyle': '-'}}}
+plotProps = {'3D theta scan': {}, 'corrected 3D theta scan': {}, '2D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'symbolsize': 2, 'linewidth': 1.3, 'linestyle': '-'}}}
 ;transform params:
 cutoffNeeded = True
-cutoff = 2000
-cutoffMaxPixel = 35
-cutoffMaxFrame = 5399
-cutoffFrameWithMaxPixel = 58
-cutoffFrameWithMaxFrame = 70
-roiKeyFrames = {39: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69458.74467694364, 2514.344096415457], 'innerRadius': 69898.54600825749, 'outerRadius': 69924.21592691503, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}], 60: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69396.6557601711, 2511.4697514301224], 'innerRadius': 69899.07446737455, 'outerRadius': 69923.68746779796, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}]}
-subtract = False
-subtractKind = 0
-subtractValue = 0
-normalize = False
-normalizeKind = 0
-normalizeValue = 1
+cutoff = 2100
+maxPixelValue = 35
+maxFrameValue = 5399
+frameWithMaxPixelValue = 58
+frameWithMaxFrameValue = 70
+shearFind = True
+shearROI = {'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [56078.472278332934, -1350.9838941539595], 'innerRadius': 55667.38235609611, 'outerRadius': 55691.253162620145, 'startAngle': 3.1172845063388417, 'endAngle': 3.0974150030256533}
+shearUse = True
+normalizeUse = True
+bandFind = True
+bandWidth = 0.035
+bandLine = (0.0016406215527252517, 0.328982606489278)
+bandROI = [{'kind': 'PointROI', 'name': 'p1', 'use': True, 'pos': [375.7844990548205, 0.9455027548186785]}, {'kind': 'PointROI', 'name': 'p2', 'use': True, 'pos': [500.4964923335435, 1.1501079388750781]}]
+bandUse = True
+subtractLine = False
 calibrationFind = False
-calibrationData = {}
-calibrationHalfPeakWidthSteps = 10
-calibrationPoly = [-187.71048352078654, 18816.546963644338]
+calibrationData = {'base': ['elastic_18600', 'elastic_18640'], 'energy': [18600.0, 18640.0], 'DCM': ['Si111', 'Si111'], 'FWHM': [0, 0]}
+calibrationHalfPeakWidthSteps = 7
+calibrationPoly = [-191.11269555116786, 18820.665444250313]
 
 [elastic_18640]
-madeOf = silx:C:/ParSeq/parseq_XES_scan/data/20201112.h5::/entry10191
-madeOf_relative = silx:../data/20201112.h5::/entry10191
-dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan/data/Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"], "metadata": "title, start_time, end_time"}
-dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../data/Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"], "metadata": "title, start_time, end_time"}
+madeOf = silx:C:/ParSeq/parseq_XES_scan_running_ROI/data/20201112.h5::/entry10191
+madeOf_relative = silx:../../parseq_XES_scan_running_ROI/data/20201112.h5::/entry10191
+dataFormat = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:C:/ParSeq/parseq_XES_scan_running_ROI/data/Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"], "conversionFactors": ["", "", ""], "metadata": "title, start_time, end_time"}
+dataFormat_relative = {"dataSource": ["measurement/xtal2_pit", "d[\"measurement/albaem01_ch1\"] + d[\"measurement/albaem01_ch2\"]", "silx:../../parseq_XES_scan_running_ROI/data/Nb-elastic-18640_Kb13_93_data_000001.h5::/entry/data/data"], "conversionFactors": ["", "", ""], "metadata": "title, start_time, end_time"}
 suffix = None
 originNodeName = 3D theta scan
 terminalNodeName = None
 transformNames = each
 colorTag = 1
 color = #ff7f0e
-plotProps = {'3D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'symbolsize': 2, 'linewidth': 1.3, 'linestyle': '-'}}}
+plotProps = {'3D theta scan': {}, 'corrected 3D theta scan': {}, '2D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'symbolsize': 2, 'linewidth': 1.3, 'linestyle': '-'}}}
 ;transform params:
 cutoffNeeded = True
-cutoff = 2000
-cutoffMaxPixel = 6
-cutoffMaxFrame = 5315
-cutoffFrameWithMaxPixel = 30
-cutoffFrameWithMaxFrame = 30
-roiKeyFrames = {39: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69458.74467694364, 2514.344096415457], 'innerRadius': 69898.54600825749, 'outerRadius': 69924.21592691503, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}], 60: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [-69396.6557601711, 2511.4697514301224], 'innerRadius': 69899.07446737455, 'outerRadius': 69923.68746779796, 'startAngle': -0.035933206772440426, 'endAngle': -0.020805842090804154}]}
-subtract = False
-subtractKind = 0
-subtractValue = 0
-normalize = False
-normalizeKind = 0
-normalizeValue = 1
+cutoff = 2100
+maxPixelValue = 6
+maxFrameValue = 5315
+frameWithMaxPixelValue = 30
+frameWithMaxFrameValue = 30
+shearFind = True
+shearROI = {'kind': 'ArcROI', 'name': 'arc1', 'use': True, 'center': [56078.472278332934, -1350.9838941539595], 'innerRadius': 55667.38235609611, 'outerRadius': 55691.253162620145, 'startAngle': 3.1172845063388417, 'endAngle': 3.0974150030256533}
+shearUse = True
+normalizeUse = True
+bandFind = True
+bandWidth = 0.03900000000000001
+bandLine = (0.0016406215527252517, 0.328982606489278)
+bandROI = [{'kind': 'PointROI', 'name': 'p1', 'use': True, 'pos': [375.7844990548205, 0.9455027548186785]}, {'kind': 'PointROI', 'name': 'p2', 'use': True, 'pos': [500.4964923335435, 1.1501079388750781]}]
+bandUse = True
+subtractLine = False
 calibrationFind = False
-calibrationData = {}
-calibrationHalfPeakWidthSteps = 10
-calibrationPoly = [-187.71048352078654, 18816.546963644338]
+calibrationData = {'base': ['elastic_18600', 'elastic_18640'], 'energy': [18600.0, 18640.0], 'DCM': ['Si111', 'Si111'], 'FWHM': [0, 0]}
+calibrationHalfPeakWidthSteps = 7
+calibrationPoly = [-191.11269555116786, 18820.665444250313]
 
 [Docks]
-floating = [False, False]
-active = 3D theta scan
+floating = [False, False, False, False]
+active = 1D energy XES
 
 [Geometry]
-mainWindow = maximized
+mainWindow = (162, 87, 1644, 763)
 3D theta scan = ()
+corrected 3D theta scan = ()
+2D theta scan = ()
 1D energy XES = ()
 
 [Undo]
