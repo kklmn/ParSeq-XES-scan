@@ -36,39 +36,53 @@ def load_test_data():
         'd["measurement/albaem01_ch1"] + d["measurement/albaem01_ch2"]']
 
     rootItem = csi.dataRootItem
+    rootItem.kwargs['runDownstream'] = True
 
     dataFormat0 = dict(dataSource=h5Format+[dataName])
     transformParams0 = dict(
-        cutoffNeeded=True, cutoff=2000,
-        roiKeyFrames={
-            39: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True,
-                  'center': [-69458.74467694364, 2514.344096415457],
-                  'innerRadius': 69898.54600825749,
-                  'outerRadius': 69924.21592691503,
-                  'startAngle': -0.035933206772440426,
-                  'endAngle': -0.020805842090804154}],
-            60: [{'kind': 'ArcROI', 'name': 'arc1', 'use': True,
-                  'center': [-69396.6557601711, 2511.4697514301224],
-                  'innerRadius': 69899.07446737455,
-                  'outerRadius': 69923.68746779796,
-                  'startAngle': -0.035933206772440426,
-                  'endAngle': -0.020805842090804154}]},
-        subtractLine=True)
-
+        cutoffNeeded=True,
+        cutoff=2100,
+        maxPixelValue=7,
+        maxFrameValue=17238,
+        frameWithMaxPixelValue=44,
+        frameWithMaxFrameValue=44,
+        shearFind=True,
+        shearROI={'kind': 'ArcROI', 'name': 'arc1', 'use': True,
+                  'center': [56078.47, -1350.98],
+                  'innerRadius': 55667., 'outerRadius': 55691.,
+                  'startAngle': 3.12, 'endAngle': 3.097},
+        shearUse=True,
+        normalizeUse=True,
+        bandFind=True,
+        bandWidth=0.035,
+        bandLine=(0.00164, 0.32898),
+        bandROI=[{'kind': 'PointROI', 'name': 'p1', 'use': True,
+                  'pos': [375.7845, 0.9455]},
+                 {'kind': 'PointROI', 'name': 'p2', 'use': True,
+                  'pos': [500.4965, 1.150108]}],
+        bandUse=True,
+        subtractLine=False,
+        calibrationFind=True,
+        calibrationData={'base': ['elastic_18600', 'elastic_18640'],
+                         'energy': [18600.0, 18640.0],
+                         'DCM': ['Si111', 'Si111'],
+                         'FWHM': [3.52489, 3.53095], 'slice': [':', ':']},
+        calibrationHalfPeakWidthSteps=7,
+        calibrationPoly=[-190.651, 18820.0347],
+        )
     spectrum0 = rootItem.insert_data(
         scanName, dataFormat=dataFormat0, copyTransformParams=False,
-        transformParams=transformParams0, runDownstream=True)[0]
+        transformParams=transformParams0)[0]
     group0 = rootItem.insert_item('elastic', colorPolicy='loop1')
     dataFormat1 = dict(dataSource=h5Format+[dataNameEl1])
+    transformParams = dict(transformParams0)
     group0.insert_data(
         scanNameEl1, dataFormat=dataFormat1, alias='elastic_18600',
-        copyTransformParams=False, transformParams=transformParams0,
-        runDownstream=True)
+        copyTransformParams=False, transformParams=transformParams)
     dataFormat2 = dict(dataSource=h5Format+[dataNameEl2])
     group0.insert_data(
         scanNameEl2, dataFormat=dataFormat2, alias='elastic_18640',
-        copyTransformParams=False, transformParams=transformParams0,
-        runDownstream=True)
+        copyTransformParams=False, transformParams=transformParams)
 
     tr = list(csi.transforms.values())[-1]
 

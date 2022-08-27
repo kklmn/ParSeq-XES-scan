@@ -5,7 +5,7 @@ __date__ = "22 Aug 2022"
 
 import os, sys; sys.path.append('..')  # analysis:ignore
 import parseq.core.singletons as csi
-import parseq_XES_scan_shear_curve as myapp
+import parseq_XES_scan as myapp
 
 
 def main(withTestData=True, withGUI=True):
