@@ -7,8 +7,6 @@ one) is scanned in its theta angle and the analyzed emission is collected by a
 This pipeline also serves as an example for creating analysis nodes, transforms
 that connect these nodes and widgets that set options and parameters of the
 transforms."""
-__author__ = "Konstantin Klementiev"
-__date__ = "23 Jul 2021"
 
 import os.path as osp
 
@@ -24,7 +22,7 @@ __email__ = "first dot last at gmail dot com"
 __license__ = "MIT license"
 __synopsis__ = "A pipeline for data processing of XES theta scans"
 
-csi.pipelineName = 'XES scan shear curve'
+csi.pipelineName = 'XES scan'
 csi.appPath = osp.dirname(osp.abspath(__file__))
 csi.appIconPath = osp.join(csi.appPath, 'doc', '_images', 'XES_scan_icon.ico')
 csi.appSynopsis = __synopsis__

@@ -11,6 +11,7 @@ from skimage import transform as sktransform
 
 import sys; sys.path.append('..')  # analysis:ignore
 from parseq.core import transforms as ctr
+from parseq.core import commons as cco
 from parseq.utils import math as uma
 from parseq.third_party import xrt
 
@@ -79,9 +80,10 @@ class Tr1(ctr.Transform):
     # inArrays and outArrays needed only for multiprocessing/multithreading:
     inArrays = ['xes3D', 'i0', 'shearX', 'shearY']
     outArrays = ['xes3Dcorr']
+    progressTimeDelta = 0.5  # sec
 
     @staticmethod
-    def run_main(data):
+    def run_main(data, progress):
         dtparams = data.transformParams
 
         data.xes3Dcorr = np.array(data.xes3D, dtype=float)
@@ -95,9 +97,13 @@ class Tr1(ctr.Transform):
                 xy[:, 0] += shear[xy[:, 1].astype(int)].astype(int)
                 return xy
 
+            progress.value = 0
             for i in range(data.xes3D.shape[0]):
                 data.xes3Dcorr[i, :, :] = sktransform.warp(
                     data.xes3D[i, :, :].astype(float), shift_left, order=0)
+                pr = (i+1) / data.xes3D.shape[0]
+                progress.value = pr  # multiprocessing Value
+
             # end a loop of 2D transformations
 
             # # a 3D transformation, depending on *order*, it can be slower
@@ -162,22 +168,33 @@ class Tr3(ctr.Transform):
     def make_calibration(data, allData):
         dtparams = data.transformParams
         cd = dtparams['calibrationData']
+        if 'slice' not in cd:  # added later
+            cd['slice'] = [':'] * len(cd['base'])
         pw = dtparams['calibrationHalfPeakWidthSteps']
 
         thetas = []
-        for alias in cd['base']:
-            for sp in allData:
-                if sp.alias == alias:
-                    break
-            else:
-                raise ValueError
-            iel = sp.xes.argmax()
-            peak = slice(iel-pw, iel+pw+1)
-            mel = (sp.xes*sp.theta)[peak].sum() / sp.xes[peak].sum()
-            thetas.append(mel)
+        try:
+            for alias, sliceStr in zip(cd['base'], cd['slice']):
+                for sp in allData:
+                    if sp.alias == alias:
+                        break
+                else:
+                    return False
+                slice_ = cco.parse_slice_str(sliceStr)
+                xes = sp.xes[slice_]
+                theta = sp.theta[slice_]
+                iel = xes.argmax()
+                peak = slice(max(iel-pw, 0), iel+pw+1)
+                mel = (xes*theta)[peak].sum() / xes[peak].sum()
+                thetas.append(mel)
 
-        dtparams['calibrationPoly'] = np.polyfit(thetas, cd['energy'], 1)
-        data.energy = np.polyval(dtparams['calibrationPoly'], data.theta)
+            dtparams['calibrationPoly'] = np.polyfit(thetas, cd['energy'], 1)
+            data.energy = np.polyval(dtparams['calibrationPoly'], data.theta)
+        except Exception as e:
+            print('calibration failed for {0}:'.format(data.alias))
+            print(e)
+            return False
+        return True
 
     @staticmethod
     def make_rocking_curves(data, allData, rcBand=40):

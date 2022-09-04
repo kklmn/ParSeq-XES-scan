@@ -175,7 +175,7 @@ class Tr1Widget(PropWidget):
 
     """
 
-    def __init__(self, parent=None, node=None, ):
+    def __init__(self, parent=None, node=None):
         super().__init__(parent, node)
         layout = qt.QVBoxLayout()
 
@@ -279,14 +279,20 @@ class Tr2Widget(PropWidget):
         if dtparams['bandLine'] is not None:
             k, b = dtparams['bandLine']
             w = dtparams['bandWidth']
-            yb = np.array([0, data.xes2D.shape[0]-1])
-            # yb = np.array([data.theta[0], data.theta[-1]])
+            # yb = np.array([0, data.xes2D.shape[0]-1])
+            yb = np.array([data.theta[0], data.theta[-1]])
             xb = (yb - b - w/2) / k
+            xlim = plot.getXAxis().getLimits()
             plot.addCurve(xb, yb, legend='topBorderLine',
                           linestyle='-', color='r', resetzoom=False)
             xb = (yb - b + w/2) / k
             plot.addCurve(xb, yb, legend='bottomBorderLine',
                           linestyle='-', color='b', resetzoom=False)
+            xb = (yb - b) / k
+            xlim = list(plot.getXAxis().getLimits())
+            xlim[0] = max(xlim[0], xb.min())
+            xlim[1] = min(xlim[1], xb.max())
+            plot.getXAxis().setLimits(*xlim)
 
     def extraSetUIFromData(self):
         if len(csi.selectedItems) == 0:
