@@ -90,34 +90,47 @@ class Tr1(ctr.Transform):
         # t0 = time.time()
 
         if dtparams['shearUse'] and hasattr(data, 'shearX'):
-            shear = data.shearX - data.shearX.min()
+            # if dtparams['shearStraight']:
+            if False:  # this is slower
+                # shearStraight = dX / dY:
+                shearStraight = (data.shearX[-1]-data.shearX[0]) /\
+                    (data.shearY[-1]-data.shearY[0])
+                afftr = sktransform.AffineTransform(
+                    np.array([[1, shearStraight, 0], [0, 1, 0], [0, 0, 1]]))
+                for i in range(data.xes3D.shape[0]):
+                    data.xes3Dcorr[i, :, :] = sktransform.warp(
+                        data.xes3D[i, :, :], afftr, order=0,
+                        preserve_range=True)
+                    pr = (i+1) / data.xes3D.shape[0]
+                    progress.value = pr  # multiprocessing Value
+            else:  # curved
+                shear = data.shearX - data.shearX.min()
 
-            # a loop of 2D transformations
-            def shift_left(xy):
-                xy[:, 0] += shear[xy[:, 1].astype(int)].astype(int)
-                return xy
+                # a loop of 2D transformations
+                def shift_left(xy):
+                    xy[:, 0] += shear[xy[:, 1].astype(int)].astype(int)
+                    return xy
 
-            progress.value = 0
-            for i in range(data.xes3D.shape[0]):
-                data.xes3Dcorr[i, :, :] = sktransform.warp(
-                    data.xes3D[i, :, :].astype(float), shift_left, order=0)
-                pr = (i+1) / data.xes3D.shape[0]
-                progress.value = pr  # multiprocessing Value
+                progress.value = 0
+                for i in range(data.xes3D.shape[0]):
+                    data.xes3Dcorr[i, :, :] = sktransform.warp(
+                        data.xes3D[i, :, :].astype(float), shift_left, order=0)
+                    pr = (i+1) / data.xes3D.shape[0]
+                    progress.value = pr  # multiprocessing Value
+                # end a loop of 2D transformations
 
-            # end a loop of 2D transformations
-
-            # # a 3D transformation, depending on *order*, it can be slower
-            # # than with a loop!
-            # resShape = data.xes3D.shape
-            # c0, c1, c2 = np.meshgrid(np.arange(resShape[0]),
-            #                          np.arange(resShape[1]),
-            #                          np.arange(resShape[2]),
-            #                          indexing='ij')
-            # c2 += shear[np.newaxis, :, np.newaxis].astype(int)
-            # coords = np.array([c0, c1, c2])
-            # data.xes3Dcorr = sktransform.warp(
-            #     data.xes3D.astype(float), coords, order=0)
-            # # end a 3D transformation
+                # # a 3D transformation, depending on *order*, it can be slower
+                # # than with a loop!
+                # resShape = data.xes3D.shape
+                # c0, c1, c2 = np.meshgrid(np.arange(resShape[0]),
+                #                          np.arange(resShape[1]),
+                #                          np.arange(resShape[2]),
+                #                          indexing='ij')
+                # c2 += shear[np.newaxis, :, np.newaxis].astype(int)
+                # coords = np.array([c0, c1, c2])
+                # data.xes3Dcorr = sktransform.warp(
+                #     data.xes3D.astype(float), coords, order=0)
+                # # end a 3D transformation
 
         # print('warping done in {0}s'.format(time.time()-t0))
 
@@ -191,8 +204,7 @@ class Tr3(ctr.Transform):
             dtparams['calibrationPoly'] = np.polyfit(thetas, cd['energy'], 1)
             data.energy = np.polyval(dtparams['calibrationPoly'], data.theta)
         except Exception as e:
-            print('calibration failed for {0}:'.format(data.alias))
-            print(e)
+            print('calibration failed for {0}: {1}'.format(data.alias, e))
             return False
         return True
 
