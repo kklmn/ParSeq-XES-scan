@@ -19,7 +19,7 @@ from parseq.gui.roi import RoiWidget
 
 class Tr0Widget(PropWidget):
     u"""
-    Help page under construction
+    Help page under construction 0
 
     .. image:: _images/mickey-rtfm.gif
        :width: 309
@@ -166,7 +166,7 @@ class Tr0Widget(PropWidget):
 
 class Tr1Widget(PropWidget):
     u"""
-    Help page under construction
+    Help page under construction 1
 
     .. image:: _images/mickey-rtfm.gif
        :width: 309
@@ -202,7 +202,7 @@ class Tr1Widget(PropWidget):
 
 class Tr2Widget(PropWidget):
     u"""
-    Help page under construction
+    Help page under construction 2
 
     .. image:: _images/mickey-rtfm.gif
        :width: 309
@@ -312,7 +312,7 @@ class Tr2Widget(PropWidget):
 
 class Tr3Widget(PropWidget):
     u"""
-    Help page under construction
+    Help page under construction 3
 
     .. image:: _images/mickey-rtfm.gif
        :width: 309
@@ -343,7 +343,7 @@ class Tr3Widget(PropWidget):
                                 'calibrationFind')
         layoutC = qt.QVBoxLayout()
         self.calibrateEnergyWidget = CalibrateEnergyWidget(
-            self, formatStr=node.getProp('fwhm', 'plotLabel'))
+            self, formatStr=node.get_prop('fwhm', 'plotLabel'))
         self.calibrateEnergyWidget.autoSetButton.clicked.connect(self.autoSet)
         self.calibrateEnergyWidget.autoSetButton.setToolTip(
             'find a data group having "calib" or "elast" in its name and\n'
