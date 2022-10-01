@@ -10,7 +10,7 @@ that connect these nodes and widgets that set options and parameters of the
 transforms.
 
 <p align="center">
-  <img src="doc/_images/node4.png" width=1200 />
+  <img src="parseq_XES_scan/doc/_images/node4.png" width=1200 />
 </p>
 
 Dependencies
