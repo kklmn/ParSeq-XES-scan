@@ -18,14 +18,29 @@ from parseq.gui.roi import RoiWidget
 
 
 class Tr0Widget(PropWidget):
-    u"""
-    Help page under construction 0
+    r"""
+    Mask Eiger
+    ----------
 
-    .. image:: _images/mickey-rtfm.gif
-       :width: 309
+    This transformation sets a low pass filter to the detector pixels. Look at
+    the actual maximum pixel value in the status field ``max pixel`` and at the
+    top of the plot’s color bar. This maximum value is among all pixel that
+    fall below the cutoff threshold.
 
-    test link: `MAX IV Laboratory <https://www.maxiv.lu.se/>`_
+    Find shear
+    ----------
 
+    Emission lines are seen on the detector as inclined and curved bands. In
+    order to reduce one data dimension, along ``horizontal pixel``, we first
+    bring this curved band to an upright position. This is done in the next
+    transformation (not the present one!) by means of `skimage.transform.warp
+    <https://scikit-image.org/docs/stable/api/skimage.transform.html#skimage.transform.warp>`_.
+    The present transformation provides the skew line used in that warp
+    correction. This is achieved by constructing an arc ROI. The width of the
+    ROI is not important for this function but it is used to calculate the
+    counts within the ROI as a convenience function.
+
+    After the ROI has been set, one should do `Accept ROI`.
     """
 
     def __init__(self, parent=None, node=None):
@@ -165,14 +180,18 @@ class Tr0Widget(PropWidget):
 
 
 class Tr1Widget(PropWidget):
-    u"""
-    Help page under construction 1
+    r"""
+    Shear and normalize
+    -------------------
 
-    .. image:: _images/mickey-rtfm.gif
-       :width: 309
+    This transformation applies the found warp transformation, which is the
+    most expensive transformation in the pipeline. This fact justified the
+    split of the 3D node into two nodes: one uncorrected and one corrected. As
+    a rule of thumb, the warp transformation takes 100 ms per one detector
+    image. The total time is multiple of the scanning axis length.
 
-    test link: `MAX IV Laboratory <https://www.maxiv.lu.se/>`_
-
+    Normalization is done by the division over I0 signal and multiplying by
+    I0.max(). So don’t be surprised to see non-integer count values.
     """
 
     def __init__(self, parent=None, node=None):
@@ -201,14 +220,16 @@ class Tr1Widget(PropWidget):
 
 
 class Tr2Widget(PropWidget):
-    u"""
-    Help page under construction 2
+    r"""
+    Get XES band
+    ------------
 
-    .. image:: _images/mickey-rtfm.gif
-       :width: 309
+    This transformation reduces the 3D XES array to a 2D θ-2θ-like plane. The
+    plot is used for constructing a band that contains the emission spectrum.
+    Presently, before `silx` implements a “Band ROI”, we compose it from two
+    points and a width parameter.
 
-    test link: `MAX IV Laboratory <https://www.maxiv.lu.se/>`_
-
+    After the band has been set, one should do `Accept ROI`.
     """
 
     def __init__(self, parent=None, node=None):
@@ -311,14 +332,27 @@ class Tr2Widget(PropWidget):
 
 
 class Tr3Widget(PropWidget):
-    u"""
-    Help page under construction 3
+    r"""
+    Get XES and calibrate energy
+    ----------------------------
 
-    .. image:: _images/mickey-rtfm.gif
-       :width: 309
+    This transformation applies the band ROI from the previous step as a
+    function of the scanning θ angle.
 
-    test link: `MAX IV Laboratory <https://www.maxiv.lu.se/>`_
+    One can optionally subtract a straight line connecting the end points of
+    the spectrum.
 
+    Energy calibration is done by using at least two ‘elastic scans’ that are
+    assigned to particular formal energy values. Those elastic scans have to be
+    loaded to the pipeline data tree. See the tooltip of the button ``auto set
+    references`` to use this automatic action.
+
+    The energy calibration table also has a column `DCM` for selecting the type
+    of the used monochromator crystals and displaying the corresponding rocking
+    curve of the DCM. Most ideally, the elastic band should approach the
+    calculated DCM band. The width of the latter is reported in the last column
+    of the table, whereas the elastic band width is reported in the data tree
+    view.
     """
 
     def __init__(self, parent=None, node=None):
