@@ -243,20 +243,7 @@ class Tr2Widget(PropWidget):
         bandPanel.setCheckable(True)
         layoutB = qt.QVBoxLayout()
         layoutB.setContentsMargins(0, 2, 2, 2)
-        layoutW = qt.QHBoxLayout()
-        wLabel = qt.QLabel('width')
-        layoutW.addWidget(wLabel)
-        width = qt.QDoubleSpinBox()
-        width.setMinimum(-1000)
-        width.setMaximum(1000)
-        width.setDecimals(3)
-        width.setSingleStep(0.001)
-        self.registerPropWidget([width, wLabel], wLabel.text(), 'bandWidth')
-        layoutW.addWidget(width)
-        layoutW.addStretch()
-        layoutB.addLayout(layoutW)
-        self.roiWidget = RoiWidget(
-            self, node.widget.plot, ['CrossROI', 'PointROI'], 2)
+        self.roiWidget = RoiWidget(self, node.widget.plot, ['BandROI'])
         self.roiWidget.acceptButton.clicked.connect(self.acceptBand)
         self.registerPropWidget(
             [self.roiWidget.table, self.roiWidget.acceptButton], 'bandROI',
@@ -270,11 +257,11 @@ class Tr2Widget(PropWidget):
         layout.addStretch()
         self.setLayout(layout)
 
-        self.extraPlotSetup()
+        # self.extraPlotSetup()
 
     def acceptBand(self):
         self.roiWidget.syncRoi()
-        self.updateProp('bandROI', self.roiWidget.getRois())
+        self.updateProp('bandROI', self.roiWidget.getCurrentRoi())
         for data in csi.selectedItems:
             bandLine = data.transformParams['bandLine']
             data.transformParams['bandUse'] = True
@@ -282,38 +269,11 @@ class Tr2Widget(PropWidget):
         nextWidget.bandUse.setEnabled(bandLine is not None)
         nextWidget.setUIFromData()
 
-    def extraPlotSetup(self):
-        tb = qt.QToolBar()
-        plot = self.node.widget.plot
-        tb.addAction(control_actions.OpenGLAction(parent=tb, plot=plot))
-        plot.addToolBar(tb)
-
-    def extraPlot(self):
-        if len(csi.selectedItems) == 0:
-            return
-        data = csi.selectedItems[0]
-        if not self.node.widget.shouldPlotItem(data):
-            return
-        dtparams = data.transformParams
-        plot = self.node.widget.plot
-
-        if dtparams['bandLine'] is not None:
-            k, b = dtparams['bandLine']
-            w = dtparams['bandWidth']
-            # yb = np.array([0, data.xes2D.shape[0]-1])
-            yb = np.array([data.theta[0], data.theta[-1]])
-            xb = (yb - b - w/2) / k
-            xlim = plot.getXAxis().getLimits()
-            plot.addCurve(xb, yb, legend='topBorderLine',
-                          linestyle='-', color='r', resetzoom=False)
-            xb = (yb - b + w/2) / k
-            plot.addCurve(xb, yb, legend='bottomBorderLine',
-                          linestyle='-', color='b', resetzoom=False)
-            xb = (yb - b) / k
-            xlim = list(plot.getXAxis().getLimits())
-            xlim[0] = max(xlim[0], xb.min())
-            xlim[1] = min(xlim[1], xb.max())
-            plot.getXAxis().setLimits(*xlim)
+    # def extraPlotSetup(self):
+    #     tb = qt.QToolBar()
+    #     plot = self.node.widget.plot
+    #     tb.addAction(control_actions.OpenGLAction(parent=tb, plot=plot))
+    #     plot.addToolBar(tb)
 
     def extraSetUIFromData(self):
         if len(csi.selectedItems) == 0:
@@ -329,6 +289,7 @@ class Tr2Widget(PropWidget):
             pass
         dtparams = data.transformParams
         self.roiWidget.setRois(dtparams['bandROI'])
+        self.roiWidget.syncRoi()
 
 
 class Tr3Widget(PropWidget):

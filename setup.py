@@ -31,7 +31,7 @@ a project file; use the test project file located in `parseq_XES_scan/saved`.
 
 setup(
     name='parseq_XES_scan',
-    version='0.8.0',
+    version='0.9.0',
     description='A pipeline for data processing of XES theta scans',
     long_description=long_description,
     long_description_content_type='text/x-rst',
@@ -48,7 +48,7 @@ setup(
         'parseq_XES_scan': ['data/*.*', 'doc/_images/*.*', 'saved/*.*']},
     scripts=['XES_scan_start.py'],
     install_requires=['numpy>=1.8.0', 'scipy>=0.17.0', 'matplotlib>=2.0.0',
-                      'sphinx>=1.6.2', 'h5py', 'silx', 'hdf5plugin'],
+                      'sphinx>=1.6.2', 'h5py', 'silx>=1.1.0', 'hdf5plugin'],
     classifiers=['Development Status :: 5 - Production/Stable',
                  'Intended Audience :: Science/Research',
                  'Natural Language :: English',

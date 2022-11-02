@@ -143,9 +143,13 @@ class Tr1(ctr.Transform):
 class Tr2(ctr.Transform):
     name = 'get XES band'
     defaultParams = dict(
-        bandFind=True, bandWidth=0.010, bandLine=None,
-        bandROI=[dict(kind='PointROI', name='p1', pos=(370, 0.95)),
-                 dict(kind='PointROI', name='p2', pos=(560, 1.25))])
+        bandFind=True, bandLine=None,
+        # bandWidth=0.010,
+        # bandROI=[dict(kind='PointROI', name='p1', pos=(370, 0.95)),
+        #          dict(kind='PointROI', name='p2', pos=(560, 1.25))])
+        bandROI=dict(kind='BandROI', name='band', use=True,
+                     begin=(370, 0.95), end=(560, 1.25), width=0.010),
+        )
     nThreads = cpus
     # nProcesses = cpus
     # inArrays and outArrays needed only for multiprocessing/multithreading:
@@ -159,10 +163,10 @@ class Tr2(ctr.Transform):
         data.xes = data.xes2D.sum(axis=1)
         try:
             if dtparams['bandFind']:
-                x1, y1 = dtparams['bandROI'][0]['pos']
-                x2, y2 = dtparams['bandROI'][1]['pos']
+                x1, y1 = dtparams['bandROI']['begin']
+                x2, y2 = dtparams['bandROI']['end']
                 k, b = _line((x1, x2), (y1, y2))
-                dtparams['bandLine'] = k, b
+                dtparams['bandLine'] = k, b, dtparams['bandROI']['width']
             else:
                 dtparams['bandLine'] = None
         except Exception:
@@ -255,8 +259,7 @@ class Tr3(ctr.Transform):
             #                      np.arange(data.xes2D.shape[0]))
             xv, yv = np.meshgrid(np.arange(data.xes2D.shape[1]),
                                  data.theta)
-            k, b = dtparams['bandLine']
-            w = dtparams['bandWidth']
+            k, b, w = dtparams['bandLine']
             dataCut = np.array(data.xes2D, dtype=np.float)
             dataCut[yv > k*xv + b + w/2] = 0
             dataCut[yv < k*xv + b - w/2] = 0
