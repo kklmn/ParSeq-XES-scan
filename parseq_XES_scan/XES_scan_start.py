@@ -1,17 +1,22 @@
 # -*- coding: utf-8 -*-
 __author__ = "Konstantin Klementiev"
-__date__ = "22 Aug 2022"
+__date__ = "7 Mar 2023"
 # !!! SEE CODERULES.TXT !!!
 
 import os, sys; sys.path.append('..')  # analysis:ignore
+import argparse
+
 import parseq.core.singletons as csi
+import parseq.core.save_restore as csr
 import parseq_XES_scan as myapp
 
 
-def main(withTestData=True, withGUI=True):
+def main(projectFile=None, withTestData=True, withGUI=True):
     myapp.make_pipeline(withGUI)
 
-    if withTestData:
+    if projectFile:
+        csr.load_project(projectFile)
+    elif withTestData:
         myapp.load_test_data()
 
     if withGUI:
@@ -23,6 +28,8 @@ def main(withTestData=True, withGUI=True):
         app = qt.QApplication(sys.argv)
         mainWindow = MainWindowParSeq()
         mainWindow.show()
+        if projectFile or withTestData:
+            csi.model.selectItems()
 
         app.exec_()
     else:
@@ -33,12 +40,23 @@ def main(withTestData=True, withGUI=True):
         for data in csi.dataRootItem.get_items():
             fw = ', fwhm  = {0:.1f} eV'.format(data.fwhm) if data.fwhm else ''
             plt.plot(data.energy, data.xes*1e-3, label=data.alias+fw)
-        plt.legend()
+        plt.legend(loc='upper left')
         plt.show()
 
 
 if __name__ == '__main__':
-    # csi.DEBUG_LEVEL = 100
-    withTestData = '--test' in sys.argv
-    withGUI = '--noGUI' not in sys.argv
-    main(withTestData=withTestData, withGUI=withGUI)
+    parser = argparse.ArgumentParser(description="starter of parseq_XES_scan")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-t", "--test", action="store_true",
+                       help="load test data defined in XAS_tests.py")
+    group.add_argument("-p", "--projectFile", metavar='NNN.pspj',
+                       help="load a .pspj project file")
+    parser.add_argument("-v", "--verbosity", type=int, default=0,
+                        help="verbosity level for diagnostic purpose")
+    parser.add_argument("-nG", "--noGUI", action="store_true",
+                        help="start the data pipeline without GUI")
+    args = parser.parse_args()
+
+    csi.DEBUG_LEVEL = args.verbosity
+    main(projectFile=args.projectFile, withTestData=args.test,
+         withGUI=not args.noGUI)

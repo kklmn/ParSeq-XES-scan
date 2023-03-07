@@ -31,7 +31,7 @@ a project file; use the test project file located in `parseq_XES_scan/saved`.
 
 setup(
     name='parseq_XES_scan',
-    version='0.9.0',
+    version='0.9.1',
     description='A pipeline for data processing of XES theta scans',
     long_description=long_description,
     long_description_content_type='text/x-rst',
