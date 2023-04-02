@@ -25,7 +25,8 @@ def main(projectFile=None, withTestData=True, withGUI=True):
 
         from silx.gui import qt
         from parseq.gui.mainWindow import MainWindowParSeq
-        app = qt.QApplication(sys.argv)
+        qtArgs = ["--disable-gpu"]  # has to be set for morph-browser users
+        app = qt.QApplication(qtArgs)
         mainWindow = MainWindowParSeq()
         mainWindow.show()
         if projectFile or withTestData:

@@ -46,7 +46,7 @@ setup(
     packages=['parseq_XES_scan'],
     package_data={
         'parseq_XES_scan': ['data/*.*', 'doc/_images/*.*', 'saved/*.*']},
-    scripts=['XES_scan_start.py'],
+    scripts=['parseq_XES_scan/XES_scan_start.py'],
     install_requires=['numpy>=1.8.0', 'scipy>=0.17.0', 'matplotlib>=2.0.0',
                       'sphinx>=1.6.2', 'h5py', 'silx>=1.1.0', 'hdf5plugin'],
     classifiers=['Development Status :: 5 - Production/Stable',
