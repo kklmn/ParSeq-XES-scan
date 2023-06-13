@@ -19,7 +19,10 @@ cpus = 'all'  # can be int or 'all' or 'half'
 
 
 def _line(xs, ys):
-    k = (ys[1] - ys[0]) / (xs[1] - xs[0])
+    try:
+        k = (ys[1] - ys[0]) / (xs[1] - xs[0])
+    except ZeroDivisionError:
+        return np.inf, 0.
     b = ys[1] - k*xs[1]
     return k, b
 
@@ -169,7 +172,8 @@ class Tr2(ctr.Transform):
                 dtparams['bandLine'] = k, b, dtparams['bandROI']['width']
             else:
                 dtparams['bandLine'] = None
-        except Exception:
+        except Exception as e:
+            print('in Tr2:', e)
             dtparams['bandLine'] = None
         return True
 
@@ -260,7 +264,7 @@ class Tr3(ctr.Transform):
             xv, yv = np.meshgrid(np.arange(data.xes2D.shape[1]),
                                  data.theta)
             k, b, w = dtparams['bandLine']
-            dataCut = np.array(data.xes2D, dtype=np.float)
+            dataCut = np.array(data.xes2D, dtype=np.float32)
             dataCut[yv > k*xv + b + w/2] = 0
             dataCut[yv < k*xv + b - w/2] = 0
             data.xes = dataCut.sum(axis=1)

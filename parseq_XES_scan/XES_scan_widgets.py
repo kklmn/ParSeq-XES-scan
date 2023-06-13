@@ -261,6 +261,7 @@ class Tr2Widget(PropWidget):
 
     def acceptBand(self):
         self.roiWidget.syncRoi()
+        data = csi.selectedItems[0]
         self.updateProp('bandROI', self.roiWidget.getCurrentRoi())
         for data in csi.selectedItems:
             bandLine = data.transformParams['bandLine']
@@ -286,9 +287,11 @@ class Tr2Widget(PropWidget):
             self.roiWidget.dataToCount = data.xes2D
             self.roiWidget.dataToCountY = data.theta
         except AttributeError:  # when no data have been yet selected
+            # print('in Tr2Widget.extraSetUIFromData:', e)
             pass
         dtparams = data.transformParams
-        self.roiWidget.setRois(dtparams['bandROI'])
+        if dtparams['bandROI']:
+            self.roiWidget.setRois(dtparams['bandROI'])
         self.roiWidget.syncRoi()
 
 
