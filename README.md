@@ -10,7 +10,7 @@ that connect these nodes and widgets that set options and parameters of the
 transforms.
 
 <p align="center">
-  <img src="parseq_XES_scan/doc/_images/node4.png" width=1200 />
+  <img src="parseq_XES_scan_reduced/doc/_images/node4.png" width=1200 />
 </p>
 
 Dependencies
@@ -24,6 +24,6 @@ How to use
 
 Either install ParSeq and this pipeline application by their installers or put
 their main folders near by (i.e. in the same folder) and run
-`python XES_scan_start.py`. You can try it with `--test` to load test data
+`python XES_scan_reduced_start.py`. You can try it with `--test` to load test data
 and/or `--noGUI` but an assumed pattern is to load a project file; use the test
-project file located in `parseq_XES_scan/saved`.
+project file located in `parseq_XES_scan_reduced/saved`.

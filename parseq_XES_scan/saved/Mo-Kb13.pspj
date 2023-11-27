@@ -1,0 +1,108 @@
+[ParSeq Application]
+pipelineName = XES scan (reduced)
+appPath = c:\ParSeq\parseq_XES_scan_reduced
+appVersion = 0.1.0
+appSynopsis = A pipeline for data processing of XES theta scans
+
+[Root]
+tree = ['20230908s/entry1025', 'elastic_all', ['elastic_19630', 'elastic_19570']]
+groups = 1
+items = 3
+colorPolicy = loop1
+colorAutoUpdate = False
+
+[20230908s/entry1025]
+madeOf = silx:C:/ParSeq/parseq_XES_scan_reduced/data/20230908s.h5::/entry1025
+madeOf_relative = silx:../data/20230908s.h5::/entry1025
+dataFormat = {"dataSource": ["np.linspace(-0.25, 0.25, 151)", "d[\"measurement/albaem-01_ch1\"] + d[\"measurement/albaem-01_ch2\"]", "instrument/eiger_xes/proj_corrected"], "conversionFactors": ["", "", ""], "metadata": ""}
+suffix = None
+originNodeName = 2D theta scan
+terminalNodeName = None
+transformNames = each
+colorTag = 1
+color = #1f77b4
+plotProps = {'2D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'symbolsize': 2, 'linewidth': 1.3, 'linestyle': '-'}}}
+;transform params:
+cutoffNeeded = True
+cutoff = 20000
+cutoffMaxBelow = 1786
+bandFind = True
+bandLine = (0.0014205311707694243, -0.7340381925089456, 0.04)
+bandROI = {'kind': 'BandROI', 'name': 'band', 'use': True, 'begin': (442.819, -0.105), 'end': (609.658, 0.132), 'width': 0.04}
+bandUse = True
+subtractLine = True
+thetaRange = [-0.25, 0.25]
+calibrationFind = True
+calibrationData = {'base': ['elastic_19630', 'elastic_19570'], 'energy': [19630.0, 19570.0], 'DCM': ['Si111', 'Si111'], 'FWHM': [3.6959430890383373, 3.684988136312313], 'slice': [':', ':']}
+calibrationHalfPeakWidthSteps = 7
+calibrationPoly = [-289.1946365303328, 19603.143760161973]
+
+[elastic_all]
+colorPolicy = loop1
+colorTag = 0
+colorAutoUpdate = False
+
+[elastic_19630]
+madeOf = silx:C:/ParSeq/parseq_XES_scan_reduced/data/20230908s.h5::/entry1030
+madeOf_relative = silx:../data/20230908s.h5::/entry1030
+dataFormat = {"dataSource": ["np.linspace(-0.25, 0.25, 151)", "d[\"measurement/albaem-01_ch1\"] + d[\"measurement/albaem-01_ch2\"]", "instrument/eiger_xes/proj_corrected"], "conversionFactors": ["", "", ""], "metadata": ""}
+suffix = None
+originNodeName = 2D theta scan
+terminalNodeName = None
+transformNames = each
+colorTag = 1
+color = #1f77b4
+plotProps = {'2D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'symbolsize': 2, 'linewidth': 1.3, 'linestyle': '-'}}}
+;transform params:
+cutoffNeeded = True
+cutoff = 20000
+cutoffMaxBelow = 973
+bandFind = True
+bandLine = (0.0014205311707694243, -0.7340381925089456, 0.04)
+bandROI = {'kind': 'BandROI', 'name': 'band', 'use': True, 'begin': (442.819, -0.105), 'end': (609.658, 0.132), 'width': 0.04}
+bandUse = True
+subtractLine = True
+thetaRange = [-0.25, 0.25]
+calibrationFind = True
+calibrationData = {'base': ['elastic_19630', 'elastic_19570'], 'energy': [19630.0, 19570.0], 'DCM': ['Si111', 'Si111'], 'FWHM': [3.6959430890383373, 3.684988136312313], 'slice': [':', ':']}
+calibrationHalfPeakWidthSteps = 7
+calibrationPoly = [-290.8798348398139, 19602.987263172545]
+
+[elastic_19570]
+madeOf = silx:C:/ParSeq/parseq_XES_scan_reduced/data/20230908s.h5::/entry1034
+madeOf_relative = silx:../data/20230908s.h5::/entry1034
+dataFormat = {"dataSource": ["np.linspace(-0.25, 0.25, 151)", "d[\"measurement/albaem-01_ch1\"] + d[\"measurement/albaem-01_ch2\"]", "instrument/eiger_xes/proj_corrected"], "conversionFactors": ["", "", ""], "metadata": ""}
+suffix = None
+originNodeName = 2D theta scan
+terminalNodeName = None
+transformNames = each
+colorTag = 1
+color = #ff7f0e
+plotProps = {'2D theta scan': {}, '1D energy XES': {'xes': {'yaxis': 'left', 'symbolsize': 2, 'linewidth': 1.3, 'linestyle': '-'}}}
+;transform params:
+cutoffNeeded = True
+cutoff = 20000
+cutoffMaxBelow = 1064
+bandFind = True
+bandLine = (0.0014205311707694243, -0.7340381925089456, 0.04)
+bandROI = {'kind': 'BandROI', 'name': 'band', 'use': True, 'begin': (442.819, -0.105), 'end': (609.658, 0.132), 'width': 0.04}
+bandUse = True
+subtractLine = True
+thetaRange = [-0.25, 0.25]
+calibrationFind = True
+calibrationData = {'base': ['elastic_19630', 'elastic_19570'], 'energy': [19630.0, 19570.0], 'DCM': ['Si111', 'Si111'], 'FWHM': [3.6959430890383373, 3.684988136312313], 'slice': [':', ':']}
+calibrationHalfPeakWidthSteps = 7
+calibrationPoly = [-289.1946365303328, 19603.143760161973]
+
+[Docks]
+floating = [False, False]
+active = 1D energy XES
+
+[Geometry]
+mainWindow = maximized
+2D theta scan = ()
+1D energy XES = ()
+
+[Undo]
+grouping = True
+
