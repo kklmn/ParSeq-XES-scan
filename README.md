@@ -10,7 +10,11 @@ that connect these nodes and widgets that set options and parameters of the
 transforms.
 
 <p align="center">
-  <img src="parseq_XES_scan_reduced/doc/_images/node4.png" width=1200 />
+  <img src="parseq_XAS/doc/_images/Mo-Kb13.gif" width=800 />
+</p>
+
+<p align="center">
+  <img src="parseq_XAS/doc/_images/about.gif" width=300 />
 </p>
 
 Dependencies
