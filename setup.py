@@ -1,6 +1,28 @@
 # -*- coding: utf-8 -*-
 from setuptools import setup
 
+import os.path as osp
+import codecs
+
+__dir__ = osp.abspath(osp.dirname(__file__))
+
+
+def read(pathnames):
+    with codecs.open(osp.join(__dir__, *pathnames), 'r') as fp:
+        return fp.read()
+
+
+def get_version():
+    inLines = read(('parseq_XES_scan', 'version.py')).splitlines()
+    for line in inLines:
+        if line.startswith('__versioninfo__'):
+            versioninfo = eval(line[line.find('=')+1:])
+            version = '.'.join(map(str, versioninfo))
+            return version
+    else:
+        raise RuntimeError("Unable to find version string.")
+
+
 long_description = u"""
 Scanning XES
 ============
@@ -32,7 +54,7 @@ to load a project file; use the test project file located in
 
 setup(
     name='parseq_XES_scan',
-    version='2024.4.0',
+    version=get_version(),
     description='A pipeline for data processing of XES theta scans',
     long_description=long_description,
     long_description_content_type='text/x-rst',
