@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 __author__ = "Konstantin Klementiev"
-__date__ = "3 Dec 2022"
+__date__ = "28 Apr 2024"
 # !!! SEE CODERULES.TXT !!!
 
 import sys; sys.path.append('..')  # analysis:ignore
 from parseq.core import singletons as csi
 from parseq.core import spectra as csp
-from . import XES_scan_reduced_nodes as xsno
-from . import XES_scan_reduced_transforms as xstr
-from . import XES_scan_reduced_widgets as xswi
+from . import XES_scan_nodes as xsno
+from . import XES_scan_transforms as xstr
+from . import XES_scan_widgets as xswi
 
 
 def make_pipeline(withGUI=False):

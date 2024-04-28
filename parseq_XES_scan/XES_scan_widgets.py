@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 __author__ = "Konstantin Klementiev"
-__date__ = "3 Dec 2022"
+__date__ = "28 Apr 2024"
 # !!! SEE CODERULES.TXT !!!
 
-# import numpy as np
+import numpy as np
 # from functools import partial
 
 from silx.gui import qt
@@ -13,9 +13,9 @@ from parseq.core import singletons as csi
 from parseq.core import commons as cco
 from parseq.gui.propWidget import PropWidget
 from parseq.gui.calibrateEnergy import CalibrateEnergyWidget
-from parseq.gui.roi import RoiWidget, RangeWidget
+from parseq.gui.roi import RoiWidget, AutoRangeWidget
 
-# from . import XES_scan_reduced_transforms as xtr
+# from . import XES_scan_transforms as xtr
 
 
 class Tr2Widget(PropWidget):
@@ -23,10 +23,9 @@ class Tr2Widget(PropWidget):
     Get XES band
     ------------
 
-    This transformation reduces the 3D XES array to a 2D θ-2θ-like plane. The
-    plot is used for constructing a band that contains the emission spectrum.
-    Presently, before `silx` implements a “Band ROI”, we compose it from two
-    points and a width parameter.
+    This transformation reduces a 2D θ-2θ-like plane. The plot is used for
+    constructing a band that contains the emission spectrum. We use a
+    `Band ROI` of silx.
 
     After the band has been set, one should do `Accept ROI`.
     """
@@ -148,9 +147,19 @@ class Tr3Widget(PropWidget):
 
         layout = qt.QVBoxLayout()
 
-        self.bandUse = qt.QCheckBox(u'use θ–2θ band masking')
-        self.registerPropWidget(self.bandUse, self.bandUse.text(), 'bandUse')
+        self.bandUse = qt.QGroupBox()
+        self.bandUse.setFlat(False)
+        self.bandUse.setTitle(u'use θ–2θ band masking')
+        self.bandUse.setCheckable(True)
+        self.registerPropWidget(self.bandUse, self.bandUse.title(), 'bandUse')
         # self.bandUse.setEnabled(False)
+        layoutB = qt.QVBoxLayout()
+        self.bandFractionalPixel = qt.QCheckBox('allow fractional pixels')
+        self.registerPropWidget(
+            self.bandFractionalPixel, self.bandFractionalPixel.text(),
+            'bandFractionalPixels')
+        layoutB.addWidget(self.bandFractionalPixel)
+        self.bandUse.setLayout(layoutB)
         layout.addWidget(self.bandUse)
 
         subtract = qt.QCheckBox('subtract global line')
@@ -186,7 +195,7 @@ class Tr3Widget(PropWidget):
         self.calibrationUse.setEnabled(False)
         layout.addWidget(self.calibrationUse)
 
-        self.thetaRangeWidget = RangeWidget(
+        self.thetaRangeWidget = AutoRangeWidget(
             self, plot, u'set θ range', '', u'θ-range', "#da70d6",
             "{0[0]:.3f}, {0[1]:.3f}", self.initThetaRange)
         self.registerPropWidget(self.thetaRangeWidget, 'θ-range', 'thetaRange')
@@ -201,7 +210,16 @@ class Tr3Widget(PropWidget):
         if len(csi.selectedItems) == 0:
             return
         data = csi.selectedItems[0]
-        return [data.theta[0], data.theta[-1]]
+        minTheta, maxTheta = np.inf, -np.inf
+        try:
+            for data in csi.selectedItems:
+                if not hasattr(data, 'theta'):  # can be for combined data
+                    continue
+                minTheta = min(data.theta[0], minTheta)
+                maxTheta = max(data.theta[-1], maxTheta)
+        except Exception:
+            return [0, 1]
+        return [minTheta, maxTheta]
 
     def extraSetUIFromData(self):
         if len(csi.selectedItems) == 0:
@@ -249,13 +267,44 @@ class Tr3Widget(PropWidget):
 
     def extraPlot(self):
         plot = self.node.widget.plot
+        wasCalibrated = False
         for data in csi.allLoadedItems:
             if not self.node.widget.shouldPlotItem(data):
                 continue
-            if hasattr(data, 'rce'):
-                legend = '{0}-rc({1})'.format(data.alias, data.rcE)
+            if not hasattr(data, 'rcE'):
+                continue
+            dtparams = data.transformParams
+            legend = '{0}-rc({1})'.format(data.alias, data.rcE)
+            if dtparams['calibrationPoly'] is not None and \
+                    dtparams['calibrationFind']:
+                wasCalibrated = True
+            if hasattr(data, 'rce') and dtparams['calibrationFind']:
                 plot.addCurve(
                     data.rce, data.rc, linestyle='-', symbol='.', color='gray',
                     legend=legend, resetzoom=False)
                 curve = plot.getCurve(legend)
                 curve.setSymbolSize(3)
+            else:
+                plot.remove(legend, kind='curve')
+
+        if wasCalibrated:
+            xnode = self.node
+            units = xnode.get_arrays_prop('plotUnit', role='x')
+            if units:
+                unit = units[0]
+                strUnit = u" ({0})".format(unit) if unit else ""
+            else:
+                strUnit = ''
+            xArrName = xnode.get_prop(xnode.plotXArray, 'plotLabel')
+        else:
+            xnode = csi.nodes['2D theta scan']
+            units = xnode.get_arrays_prop('plotUnit', role='y')
+            if units:
+                unit = units[0]
+                strUnit = u" ({0})".format(unit) if unit else ""
+            else:
+                strUnit = ''
+            xArrName = xnode.get_prop(xnode.plotYArrays[0], 'plotLabel')
+        xlabel = u"{0}{1}".format(xArrName, strUnit)
+        # print(xlabel)
+        plot.setGraphXLabel(xlabel)

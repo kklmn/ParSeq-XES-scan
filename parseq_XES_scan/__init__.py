@@ -12,7 +12,7 @@ import os.path as osp
 
 import sys; sys.path.append('..')  # analysis:ignore
 from parseq.core import singletons as csi
-from .XES_scan_reduced_pipeline import make_pipeline
+from .XES_scan_pipeline import make_pipeline
 
 from .version import __versioninfo__, __version__, __date__
 
@@ -24,7 +24,7 @@ __synopsis__ = "A pipeline for data processing of XES theta scans"
 csi.pipelineName = 'XES scan (reduced)'
 csi.appPath = osp.dirname(osp.abspath(__file__))
 csi.appIconPath = osp.join(
-    csi.appPath, 'doc', '_images', 'XES_scan_reduced_icon.ico')
+    csi.appPath, 'doc', '_images', 'XES_scan_icon.ico')
 csi.appSynopsis = __synopsis__
 csi.appDescription = __doc__
 csi.appAuthor = __author__

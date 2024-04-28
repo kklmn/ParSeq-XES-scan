@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 __author__ = "Konstantin Klementiev"
-__date__ = "3 Dec 2022"
+__date__ = "28 Apr 2024"
 # !!! SEE CODERULES.TXT !!!
 
 import numpy as np
@@ -60,9 +60,10 @@ class Tr2(ctr.Transform):
 
 
 class Tr3(ctr.Transform):
-    name = 'get XES and calibrate energy (reduced)'
+    name = 'get XES and calibrate energy'
     defaultParams = dict(
-        bandUse=False, subtractLine=True,
+        bandUse=False, bandFractionalPixels=False,
+        subtractLine=True,
         thetaRange=[],
         calibrationFind=False, calibrationData={},
         calibrationHalfPeakWidthSteps=7, calibrationPoly=None)
@@ -130,8 +131,9 @@ class Tr3(ctr.Transform):
             spenergy = np.polyval(dtparams['calibrationPoly'], sp.thetaC)
             cond = abs(spenergy - E) < rcBand/2
             xesCut = sp.xes[cond]
-            eCut = spenergy[cond]
-            rc *= abs(trapz(xesCut, eCut) / trapz(rc, e))
+            # eCut = spenergy[cond]
+            # rc *= abs(trapz(xesCut, eCut) / trapz(rc, e))
+            rc *= xesCut.max() / rc.max()
             sp.rc, sp.rce, sp.rcE = rc, e, E
             cd['FWHM'].append(uma.fwhm(e, rc))
 
@@ -140,15 +142,22 @@ class Tr3(ctr.Transform):
         dtparams = data.transformParams
 
         if dtparams['bandLine'] is not None and dtparams['bandUse']:
-            # xv, yv = np.meshgrid(np.arange(data.xes2D.shape[1]),
-            #                      np.arange(data.xes2D.shape[0]))
-            xv, yv = np.meshgrid(np.arange(data.xes2D.shape[1]), data.theta)
             k, b, w = dtparams['bandLine']
             dataCut = np.array(data.xes2D, dtype=np.float32)
-            dataCut[yv > k*xv + b + w/2] = 0
-            dataCut[yv < k*xv + b - w/2] = 0
-            # dataCut[yv > k*(xv+w/2) + b] = 0
-            # dataCut[yv < k*(xv-w/2) + b] = 0
+            u, v = np.meshgrid(np.arange(data.xes2D.shape[1]), data.theta)
+            dt = abs(data.theta[-1] - data.theta[0]) / (len(data.theta) - 1)
+            vm = v - k*u - b - w/2
+            vp = v - k*u - b + w/2
+            if dtparams['bandFractionalPixels'] and (dt > 0):
+                dataCut[vm > dt] = 0
+                dataCut[vp < -dt] = 0
+                vmWherePartial = (vm > 0) & (vm < dt)
+                dataCut[vmWherePartial] *= vm[vmWherePartial] / dt
+                vpWherePartial = (vp > -dt) & (vp < 0)
+                dataCut[vpWherePartial] *= -vp[vpWherePartial] / dt
+            else:
+                dataCut[vm > 0] = 0
+                dataCut[vp < 0] = 0
             data.xes = dataCut.sum(axis=1)
         else:
             data.xes = data.xes2D.sum(axis=1)

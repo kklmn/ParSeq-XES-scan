@@ -6,8 +6,8 @@ Scanning XES
 ============
 
 A pipeline for the ParSeq framework that implements data processing of XES
-theta scans, where the crystal (here only one) is scanned in its theta angle
-and the analyzed emission is collected by a 2D detector.
+theta scans, where the crystals are scanned in their theta anglesand the
+analyzed emission is collected by a 2D detector.
 
 This pipeline also serves as an example for creating analysis nodes, transforms
 that connect these nodes and widgets that set options and parameters of the
@@ -23,16 +23,16 @@ How to use
 ----------
 
 Either install ParSeq and this pipeline application by their installers or put
-their folders near by and run `python XES_scan_reduced_start.py`. You can try
+their folders near by and run `python XES_scan_start.py`. You can try
 it with `--test` to load test data and/or `--noGUI` but an assumed pattern is
 to load a project file; use the test project file located in
-`XES_scan_reduced/saved`.
+`parseq_XES_scan/saved`.
 
 """
 
 setup(
-    name='parseq_XES_scan_reduced',
-    version='0.1.0',
+    name='parseq_XES_scan',
+    version='2024.4.0',
     description='A pipeline for data processing of XES theta scans',
     long_description=long_description,
     long_description_content_type='text/x-rst',
@@ -44,10 +44,10 @@ setup(
     keywords='data-analysis pipeline framework gui synchrotron spectroscopy',
     # python_requires=,
     zip_safe=False,  # True: build zipped egg, False: unzipped
-    packages=['parseq_XES_scan_reduced'],
+    packages=['parseq_XES_scan'],
     package_data={
-        'parseq_XES_scan_reduced': ['data/*.*', 'doc/_images/*.*', 'saved/*.*']},
-    scripts=['parseq_XES_scan_reduced/XES_scan_reduced_start.py'],
+        'parseq_XES_scan': ['data/*.*', 'doc/_images/*.*', 'saved/*.*']},
+    scripts=['parseq_XES_scan/XES_scan_start.py'],
     install_requires=['numpy>=1.8.0', 'scipy>=0.17.0', 'matplotlib>=2.0.0',
                       'sphinx>=1.6.2', 'h5py', 'silx>=1.1.0', 'hdf5plugin'],
     classifiers=['Development Status :: 5 - Production/Stable',

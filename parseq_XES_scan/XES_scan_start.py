@@ -8,7 +8,7 @@ import argparse
 
 import parseq.core.singletons as csi
 import parseq.core.save_restore as csr
-import parseq_XES_scan_reduced as myapp
+import parseq_XES_scan as myapp
 
 
 def main(projectFile=None, withGUI=True):
@@ -19,7 +19,7 @@ def main(projectFile=None, withGUI=True):
 
     if withGUI:
         node0 = list(csi.nodes.values())[0]
-        node0.includeFilters = ['*.h5', '*.dat']
+        node0.includeFilters = ['*.h5']
 
         from silx.gui import qt
         from parseq.gui.mainWindow import MainWindowParSeq
@@ -44,14 +44,19 @@ def main(projectFile=None, withGUI=True):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="starter of parseq_XES_scan_reduced")
+        description="starter of parseq_XES_scan")
     parser.add_argument("-p", "--projectFile", metavar='NNN.pspj',
                         help="load a .pspj project file")
     parser.add_argument("-v", "--verbosity", type=int, default=0,
                         help="verbosity level for diagnostic purpose")
     parser.add_argument("-nG", "--noGUI", action="store_true",
                         help="start the data pipeline without GUI")
+    parser.add_argument("-b", "--plotBackend", metavar='backend_name',
+                        help="plot backend used by silx, either matplotlib"
+                        " (set by default) or opengl")
     args = parser.parse_args()
 
+    if args.plotBackend:
+        csi.plotBackend = args.plotBackend
     csi.DEBUG_LEVEL = args.verbosity
     main(projectFile=args.projectFile, withGUI=not args.noGUI)
