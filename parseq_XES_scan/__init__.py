@@ -12,7 +12,6 @@ import os.path as osp
 
 import sys; sys.path.append('..')  # analysis:ignore
 from parseq.core import singletons as csi
-from .XES_scan_pipeline import make_pipeline
 
 from .version import __versioninfo__, __version__, __date__
 
@@ -29,3 +28,5 @@ csi.appDescription = __doc__
 csi.appAuthor = __author__
 csi.appLicense = __license__
 csi.appVersion = __version__
+
+from .XES_scan_pipeline import make_pipeline
