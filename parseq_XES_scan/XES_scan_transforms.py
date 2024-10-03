@@ -6,7 +6,7 @@ __date__ = "28 Apr 2024"
 import numpy as np
 # import time
 
-from scipy.integrate import trapz
+# from scipy.integrate import trapezoid
 
 import sys; sys.path.append('..')  # analysis:ignore
 from parseq.core import transforms as ctr
@@ -132,7 +132,7 @@ class Tr3(ctr.Transform):
             cond = abs(spenergy - E) < rcBand/2
             xesCut = sp.xes[cond]
             # eCut = spenergy[cond]
-            # rc *= abs(trapz(xesCut, eCut) / trapz(rc, e))
+            # rc *= abs(trapezoid(xesCut, eCut) / trapezoid(rc, e))
             rc *= xesCut.max() / rc.max()
             sp.rc, sp.rce, sp.rcE = rc, e, E
             cd['FWHM'].append(uma.fwhm(e, rc))
