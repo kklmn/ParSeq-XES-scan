@@ -96,7 +96,7 @@ class Tr2Widget(PropWidget):
         for data in csi.selectedItems:
             # bandLine = data.transformParams['bandLine']
             data.transformParams['bandUse'] = True
-        nextWidget = csi.nodes['1D energy XES'].widget.transformWidget
+        nextWidget = csi.nodes['1D energy XES'].widget.transformWidgets[0]
         # nextWidget.bandUse.setEnabled(bandLine is not None)
         nextWidget.setUIFromData()
 
