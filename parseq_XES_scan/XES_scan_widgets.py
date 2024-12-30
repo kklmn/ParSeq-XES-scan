@@ -141,6 +141,11 @@ class Tr3Widget(PropWidget):
     view.
     """
 
+    plotParams = {
+        'bknd': {'linewidth': 2, 'linestyle': '-'},
+        'rce': {'linestyle': '-', 'symbol': '.', 'color': 'gray'},
+    }
+
     def __init__(self, parent=None, node=None):
         super().__init__(parent, node)
         plot = self.node.widget.plot
@@ -162,9 +167,26 @@ class Tr3Widget(PropWidget):
         self.bandUse.setLayout(layoutB)
         layout.addWidget(self.bandUse)
 
-        subtract = qt.QCheckBox('subtract global line')
-        self.registerPropWidget(subtract, subtract.text(), 'subtractLine')
-        layout.addWidget(subtract)
+        subtractBknd = qt.QGroupBox()
+        subtractBknd.setFlat(False)
+        subtractBknd.setTitle(u'subtract linear background')
+        subtractBknd.setCheckable(True)
+        self.registerPropWidget(
+            subtractBknd, subtractBknd.title(), 'subtractLine')
+        layoutS = qt.QHBoxLayout()
+        subtractLabel = qt.QLabel('relative noise level')
+        layoutS.addWidget(subtractLabel)
+        subtractLevel = qt.QDoubleSpinBox()
+        subtractLevel.setMinimum(0.0)
+        subtractLevel.setMaximum(1)
+        subtractLevel.setSingleStep(0.01)
+        subtractLevel.setDecimals(2)
+        subtractLevel.setAccelerated(True)
+        self.registerPropWidget(subtractLevel, 'relative noise level',
+                                'relativeBackgroundHeight')
+        layoutS.addWidget(subtractLevel)
+        subtractBknd.setLayout(layoutS)
+        layout.addWidget(subtractBknd)
 
         calibrationPanel = qt.QGroupBox(self)
         calibrationPanel.setFlat(False)
@@ -271,21 +293,36 @@ class Tr3Widget(PropWidget):
         for data in csi.allLoadedItems:
             if not self.node.widget.shouldPlotItem(data):
                 continue
-            if not hasattr(data, 'rcE'):
-                continue
             dtparams = data.transformParams
-            legend = '{0}-rc({1})'.format(data.alias, data.rcE)
-            if dtparams['calibrationPoly'] is not None and \
-                    dtparams['calibrationFind']:
-                wasCalibrated = True
-            if hasattr(data, 'rce') and dtparams['calibrationFind']:
-                plot.addCurve(
-                    data.rce, data.rc, linestyle='-', symbol='.', color='gray',
-                    legend=legend, resetzoom=False)
-                curve = plot.getCurve(legend)
-                curve.setSymbolSize(3)
-            else:
-                plot.remove(legend, kind='curve')
+            z = 1 if data in csi.selectedItems else 0
+
+            if hasattr(data, 'rcE'):
+                legend = '{0}-rc({1})'.format(data.alias, data.rcE)
+                if dtparams['calibrationPoly'] is not None and \
+                        dtparams['calibrationFind']:
+                    wasCalibrated = True
+                if hasattr(data, 'rce') and dtparams['calibrationFind']:
+                    plot.addCurve(
+                        data.rce, data.rc, **self.plotParams['rce'],
+                        z=z, legend=legend, resetzoom=False)
+                    curve = plot.getCurve(legend)
+                    curve.setSymbolSize(3)
+                else:
+                    plot.remove(legend, kind='curve')
+
+            # legend = '{0}.bknd'.format(data.alias)
+            # if not dtparams['subtractLine'] and data.xesBknd is not None:
+            #     curve = plot.getCurve(legend)
+            #     if curve is None:
+            #         plot.addCurve(
+            #             data.eBknd, data.xesBknd, **self.plotParams['bknd'],
+            #             color=data.color, z=z, legend=legend)
+            #     else:
+            #         curve.setData(data.eBknd, data.xesBknd)
+            #         curve.setZValue(z)
+            #     self.wasNeverPlotted = False
+            # else:
+            #     plot.remove(legend, kind='curve')
 
         if wasCalibrated:
             xnode = self.node

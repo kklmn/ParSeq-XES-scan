@@ -63,7 +63,7 @@ class Tr3(ctr.Transform):
     name = 'get XES and calibrate energy'
     defaultParams = dict(
         bandUse=False, bandFractionalPixels=False,
-        subtractLine=True,
+        subtractLine=True, relativeBackgroundHeight=0.1,
         thetaRange=[],
         calibrationFind=False, calibrationData={},
         calibrationHalfPeakWidthSteps=7, calibrationPoly=None)
@@ -172,11 +172,6 @@ class Tr3(ctr.Transform):
                 data.energy = data.theta[whereTh]
                 data.xes = data.xes[whereTh]
 
-        if dtparams['subtractLine']:
-            k0, b0 = uma.line([0, len(data.xes)-1],
-                              [data.xes[0], data.xes[-1]])
-            data.xes -= np.arange(len(data.xes))*k0 + b0
-
         for sp in allData:
             if hasattr(sp, 'rc'):
                 del sp.rc
@@ -191,6 +186,24 @@ class Tr3(ctr.Transform):
 
         if dtparams['calibrationPoly'] is not None:
             data.energy = np.polyval(dtparams['calibrationPoly'], data.thetaC)
+
+        subtractLine = dtparams['subtractLine']
+        if subtractLine:
+            relBknd = dtparams['relativeBackgroundHeight']
+            if relBknd > 0:
+                peakXES = data.xes.max() - data.xes.min()
+                whereNoise = (data.xes - data.xes.min()) < peakXES*relBknd
+                eNoise = data.energy[whereNoise]
+                xesNoise = data.xes[whereNoise]
+                bknd1 = np.polyfit(eNoise, xesNoise, 1)
+                line = np.poly1d(bknd1)
+                xesBknd = line(data.energy)
+            else:
+                k0, b0 = uma.line([0, len(data.xes)-1],
+                                  [data.xes[0], data.xes[-1]])
+                xesBknd = np.arange(len(data.xes))*k0 + b0
+
+            data.xes -= xesBknd
 
         data.fwhm = uma.fwhm(data.energy, data.xes)
 
