@@ -343,5 +343,4 @@ class Tr3Widget(PropWidget):
                 strUnit = ''
             xArrName = xnode.get_prop(xnode.plotYArrays[0], 'plotLabel')
         xlabel = u"{0}{1}".format(xArrName, strUnit)
-        # print(xlabel)
         plot.setGraphXLabel(xlabel)

@@ -11,6 +11,7 @@ import numpy as np
 import sys; sys.path.append('..')  # analysis:ignore
 from parseq.core import transforms as ctr
 from parseq.core import commons as cco
+from parseq.core.logger import logger, syslogger
 from parseq.utils import math as uma
 from parseq.third_party import xrt
 
@@ -95,7 +96,8 @@ class Tr3(ctr.Transform):
             dtparams['calibrationPoly'] = np.polyfit(thetas, cd['energy'], 1)
             data.energy = np.polyval(dtparams['calibrationPoly'], data.thetaC)
         except Exception as e:
-            print('calibration failed for {0}: {1}'.format(data.alias, e))
+            syslogger.error(
+                'calibration failed for {0}: {1}'.format(data.alias, e))
             return False
         return True
 
