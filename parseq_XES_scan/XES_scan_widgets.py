@@ -14,6 +14,7 @@ from parseq.core import commons as cco
 from parseq.gui.propWidget import PropWidget
 from parseq.gui.calibrateEnergy import CalibrateEnergyWidget
 from parseq.gui.roi import RoiWidget, AutoRangeWidget
+from parseq.gui.gcommons import StateButtonsExclusive
 
 # from . import XES_scan_transforms as xtr
 
@@ -141,6 +142,8 @@ class Tr3Widget(PropWidget):
     view.
     """
 
+    properties = {'normalize': False}
+
     plotParams = {
         'bknd': {'linewidth': 2, 'linestyle': '-'},
         'rce': {'linestyle': '-', 'symbol': '.', 'color': 'gray'},
@@ -188,6 +191,11 @@ class Tr3Widget(PropWidget):
         subtractBknd.setLayout(layoutS)
         layout.addWidget(subtractBknd)
 
+        self.checkBoxNormalize = qt.QCheckBox('show normalized')
+        self.checkBoxNormalize.setChecked(self.properties['normalize'])
+        self.checkBoxNormalize.toggled.connect(self.normalizeSlot)
+        layout.addWidget(self.checkBoxNormalize)
+
         calibrationPanel = qt.QGroupBox(self)
         calibrationPanel.setFlat(False)
         calibrationPanel.setTitle('define energy calibration')
@@ -197,9 +205,19 @@ class Tr3Widget(PropWidget):
         layoutC = qt.QVBoxLayout()
         self.calibrateEnergyWidget = CalibrateEnergyWidget(
             self, formatStr=node.get_prop('fwhm', 'plotLabel'))
+        cewl = self.calibrateEnergyWidget.layout()
+        layoutB = qt.QHBoxLayout()
+        whichXES = StateButtonsExclusive(
+            self, 'which XES version to use', ('XES←', 'XES↓'))
+        self.registerPropWidget(
+            whichXES, 'XES version to use', 'calibrationWhichXES')
+        layoutB.addWidget(whichXES)
+        cewl.insertLayout(0, layoutB)
+
         self.calibrateEnergyWidget.autoSetButton.clicked.connect(self.autoSet)
         self.calibrateEnergyWidget.autoSetButton.setToolTip(
-            'find a data group having "calib" or "elast" in its name and\n'
+            'find a data group within the same data group that has\n'
+            '"calib" or "elast" in its name and\n'
             'analyze data names for presence of a number separated by "_"')
         self.calibrateEnergyWidget.acceptButton.clicked.connect(self.accept)
         self.registerPropWidget(
@@ -227,6 +245,17 @@ class Tr3Widget(PropWidget):
         self.setLayout(layout)
         # self.setSizePolicy(qt.QSizePolicy.Minimum, qt.QSizePolicy.Minimum)
         self.calibrateEnergyWidget.resize(0, 0)
+
+    def normalizeSlot(self, value):
+        if len(csi.selectedItems) == 0:
+            return
+        self.properties['normalize'] = value
+        plot = self.node.widget.plot
+        ylim = list(plot.getYAxis().getLimits())
+        data = csi.selectedItems[0]
+        ylim[1] = 1 if value else max(data.xes.max(), data.xes_bottom.max())
+        plot.getYAxis().setLimits(*ylim)
+        csi.model.needReplot.emit(False, True, 'normalizeSlot')
 
     def initThetaRange(self):
         if len(csi.selectedItems) == 0:
@@ -256,7 +285,10 @@ class Tr3Widget(PropWidget):
 
     def autoSet(self):
         calibs = []
-        groups = csi.dataRootItem.get_groups()
+        # groups = csi.dataRootItem.get_groups()
+        if len(csi.selectedItems) == 0:
+            return
+        groups = csi.selectedItems[0].parentItem.get_groups()
         if len(csi.selectedItems) > 0 and len(groups) > 1:
             for i in range(len(groups)):
                 if csi.selectedItems[0].row() > groups[0].row():
@@ -292,23 +324,47 @@ class Tr3Widget(PropWidget):
         wasCalibrated = False
         for data in csi.allLoadedItems:
             if not self.node.widget.shouldPlotItem(data):
+                for extraLine in self.extraLines:
+                    legend = '{0}.{1}'.format(data.alias, extraLine)
+                    plot.remove(legend, kind='curve')
                 continue
             dtparams = data.transformParams
             z = 1 if data in csi.selectedItems else 0
+            if dtparams['calibrationPoly'] is not None and \
+                    dtparams['calibrationFind']:
+                wasCalibrated = True
 
             if hasattr(data, 'rcE'):
                 legend = '{0}-rc({1})'.format(data.alias, data.rcE)
-                if dtparams['calibrationPoly'] is not None and \
-                        dtparams['calibrationFind']:
-                    wasCalibrated = True
-                if hasattr(data, 'rce') and dtparams['calibrationFind']:
+                if hasattr(data, 'rce'):
+                    y = np.array(data.rc)
+                    if self.properties['normalize']:
+                        norm = y.max()
+                        if norm > 0:
+                            y /= norm
                     plot.addCurve(
-                        data.rce, data.rc, **self.plotParams['rce'],
+                        data.rce, y, **self.plotParams['rce'],
                         z=z, legend=legend, resetzoom=False)
                     curve = plot.getCurve(legend)
                     curve.setSymbolSize(3)
                 else:
                     plot.remove(legend, kind='curve')
+
+            # legend = '{0}.xes_bottom'.format(data.alias)
+            # curve = plot.getCurve(legend)
+            # y = np.array(data.xes_bottom)
+            # if self.properties['normalize']:
+            #     norm = data.xes_bottom.max()
+            #     if norm > 0:
+            #         y /= float(norm)
+            # if curve is None:
+            #     plot.addCurve(
+            #         data.energy_2theta, y, **self.plotParams['xes_2θ'],
+            #         color=data.color, z=z, legend=legend, resetzoom=False)
+            # else:
+            #     curve.setData(data.energy_2theta, y)
+            #     curve.setZValue(z)
+            # self.wasNeverPlotted = False
 
             # legend = '{0}.bknd'.format(data.alias)
             # if not dtparams['subtractLine'] and data.xesBknd is not None:
@@ -316,7 +372,8 @@ class Tr3Widget(PropWidget):
             #     if curve is None:
             #         plot.addCurve(
             #             data.eBknd, data.xesBknd, **self.plotParams['bknd'],
-            #             color=data.color, z=z, legend=legend)
+            #             color=data.color, z=z, legend=legend,
+            #             resetzoom=False)
             #     else:
             #         curve.setData(data.eBknd, data.xesBknd)
             #         curve.setZValue(z)
@@ -344,3 +401,14 @@ class Tr3Widget(PropWidget):
             xArrName = xnode.get_prop(xnode.plotYArrays[0], 'plotLabel')
         xlabel = u"{0}{1}".format(xArrName, strUnit)
         plot.setGraphXLabel(xlabel)
+
+    def extraPlotTransform(self, dataItem, xName, x, yName, y):
+        if yName.startswith('xes'):
+            try:
+                if self.properties['normalize']:
+                    norm = y.max()
+                    if norm > 0:
+                        return x, y/norm
+            except Exception:
+                pass
+        return x, y

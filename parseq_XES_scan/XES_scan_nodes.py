@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 __author__ = "Konstantin Klementiev"
-__date__ = "3 Dec 2022"
+__date__ = "24 Jan 2025"
 # !!! SEE CODERULES.TXT !!!
 
 import sys; sys.path.append('..')  # analysis:ignore
@@ -17,7 +17,7 @@ class Node3(cno.Node):
     arrays['i0'] = dict(qLabel='I0', qUnit='counts', role='1D')
     arrays['xes2D'] = dict(
         raw='xes2DRaw', qLabel='XES2D', qUnit='counts', role='2D',
-        plotLabel=['tangential pixel', 'theta'])
+        plotLabel=['tangential (2θ) pixel', 'theta'])
     checkShapes = ['theta', 'i0', 'xes2D[0]']
 
 
@@ -25,7 +25,14 @@ class Node4(cno.Node):
     name = '1D energy XES'
     arrays = OrderedDict()
     arrays['energy'] = dict(qUnit='eV', role='x')
-    arrays['xes'] = dict(qLabel='XES', qUnit='counts', role='yleft')
-    arrays['fwhm'] = dict(qLabel='FWHM', qUnit='eV', role='0D',
-                          plotLabel='{0:.2f}')
+    arrays['xes'] = dict(
+        qLabel='XES←', qUnit='counts', role='yleft',
+        plotParams=dict(linewidth=2, linestyle='-'))
+    arrays['fwhm'] = dict(
+        qLabel='FWHM←', qUnit='eV', role='0D', plotLabel='{0:.2f}')
+    arrays['xes_bottom'] = dict(
+        qLabel='XES↓', qUnit='counts', role='yleft', abscissa='energy_bottom',
+        plotParams=dict(linewidth=1, linestyle='-'))
+    arrays['fwhm_bottom'] = dict(
+        qLabel='FWHM↓', qUnit='eV', role='0D', plotLabel='{0:.2f}')
     auxArrays = [['rce', 'rc']]
