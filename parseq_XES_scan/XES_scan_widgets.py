@@ -144,8 +144,9 @@ class Tr3Widget(PropWidget):
 
     properties = {'normalize': False}
 
+    extraLines = ('rce',)
     plotParams = {
-        'bknd': {'linewidth': 2, 'linestyle': '-'},
+        # 'bknd': {'linewidth': 2, 'linestyle': '-'},
         'rce': {'linestyle': '-', 'symbol': '.', 'color': 'gray'},
     }
 
@@ -334,37 +335,18 @@ class Tr3Widget(PropWidget):
                     dtparams['calibrationFind']:
                 wasCalibrated = True
 
-            if hasattr(data, 'rcE'):
-                legend = '{0}-rc({1})'.format(data.alias, data.rcE)
-                if hasattr(data, 'rce'):
-                    y = np.array(data.rc)
-                    if self.properties['normalize']:
-                        norm = y.max()
-                        if norm > 0:
-                            y /= norm
-                    plot.addCurve(
-                        data.rce, y, **self.plotParams['rce'],
-                        z=z, legend=legend, resetzoom=False)
-                    curve = plot.getCurve(legend)
-                    curve.setSymbolSize(3)
-                else:
-                    plot.remove(legend, kind='curve')
-
-            # legend = '{0}.xes_bottom'.format(data.alias)
-            # curve = plot.getCurve(legend)
-            # y = np.array(data.xes_bottom)
-            # if self.properties['normalize']:
-            #     norm = data.xes_bottom.max()
-            #     if norm > 0:
-            #         y /= float(norm)
-            # if curve is None:
-            #     plot.addCurve(
-            #         data.energy_2theta, y, **self.plotParams['xes_2θ'],
-            #         color=data.color, z=z, legend=legend, resetzoom=False)
-            # else:
-            #     curve.setData(data.energy_2theta, y)
-            #     curve.setZValue(z)
-            # self.wasNeverPlotted = False
+            legend = '{0}.rce'.format(data.alias)
+            if hasattr(data, 'rce'):
+                y = np.array(data.rc)
+                if self.properties['normalize']:
+                    norm = y.max()
+                    if norm > 0:
+                        y /= norm
+                plot.addCurve(
+                    data.rce, y, **self.plotParams['rce'],
+                    z=z, legend=legend, resetzoom=False)
+                curve = plot.getCurve(legend)
+                curve.setSymbolSize(3)
 
             # legend = '{0}.bknd'.format(data.alias)
             # if not dtparams['subtractLine'] and data.xesBknd is not None:
