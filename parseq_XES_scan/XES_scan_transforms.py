@@ -161,7 +161,10 @@ class Tr3(ctr.Transform):
             k, b, w = dtparams['bandLine']
             dataCut = np.array(data.xes2D, dtype=np.float32)
             u, v = np.meshgrid(np.arange(data.xes2D.shape[1]), data.theta)
-            dt = abs(data.theta[-1] - data.theta[0]) / (len(data.theta) - 1)
+            if len(data.theta) > 1:
+                dt = abs(data.theta[-1]-data.theta[0]) / (len(data.theta)-1)
+            else:
+                dt = 1
             vm = v - k*u - b - w/2
             vp = v - k*u - b + w/2
             if dtparams['bandFractionalPixels'] and (dt > 0):
@@ -269,7 +272,13 @@ class Tr3(ctr.Transform):
             data.xes -= xesBknd
             data.xes_bottom -= xesBkndb
 
-        data.fwhm = uma.fwhm(data.energy, data.xes)
-        data.fwhm_bottom = uma.fwhm(data.energy_bottom, data.xes_bottom)
+        try:
+            data.fwhm = uma.fwhm(data.energy, data.xes)
+        except IndexError:
+            data.fwhm = 0
+        try:
+            data.fwhm_bottom = uma.fwhm(data.energy_bottom, data.xes_bottom)
+        except IndexError:
+            data.fwhm_bottom = 0
 
         return True

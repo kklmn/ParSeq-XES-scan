@@ -29,7 +29,6 @@ def main(projectFile=None, withGUI=True):
         mainWindow.show()
         if projectFile:
             csi.model.selectItems()
-
         app.exec_()
     else:
         import matplotlib.pyplot as plt

@@ -254,7 +254,11 @@ class Tr3Widget(PropWidget):
         plot = self.node.widget.plot
         ylim = list(plot.getYAxis().getLimits())
         data = csi.selectedItems[0]
-        ylim[1] = 1 if value else max(data.xes.max(), data.xes_bottom.max())
+        try:
+            ylim[1] = 1 if value else max(
+                data.xes.max(), data.xes_bottom.max())
+        except ValueError:  # if data.xes is zero-sized
+            return
         plot.getYAxis().setLimits(*ylim)
         csi.model.needReplot.emit(False, True, 'normalizeSlot')
 
