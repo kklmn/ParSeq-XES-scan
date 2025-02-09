@@ -23,6 +23,8 @@ __synopsis__ = "A pipeline for data processing of XES theta scans"
 csi.pipelineName = 'XES scan (reduced)'
 csi.appPath = osp.dirname(osp.abspath(__file__))
 csi.appIconPath = osp.join(csi.appPath, 'doc', '_images', 'XES_scan_icon.ico')
+csi.appBigIconPath = osp.join(
+    csi.appPath, 'doc', '_images', 'parseq-XES_big.png')
 csi.appSynopsis = __synopsis__
 csi.appDescription = __doc__
 csi.appAuthor = __author__
