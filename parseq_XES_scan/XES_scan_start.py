@@ -25,7 +25,7 @@ def main(projectFile=None, withGUI=True):
         from silx.gui import qt
         from parseq.gui.mainWindow import MainWindowParSeq
         app = qt.QApplication(sys.argv)
-        mainWindow = MainWindowParSeq()
+        mainWindow = MainWindowParSeq(tabPos=qt.QTabWidget.North)
         mainWindow.show()
         if projectFile:
             csi.model.selectItems()

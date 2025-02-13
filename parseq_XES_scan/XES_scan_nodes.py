@@ -12,6 +12,7 @@ from collections import OrderedDict
 class Node3(cno.Node):
     name = '2D theta scan'
     arrays = OrderedDict()
+    icon = "doc/_images/icon-xes-2D.png"
     arrays['theta'] = dict(
         qLabel='θ', qUnit='°', role='y', plotLabel=r'$\theta$')
     arrays['i0'] = dict(qLabel='I0', qUnit='counts', role='1D')
@@ -24,6 +25,7 @@ class Node3(cno.Node):
 class Node4(cno.Node):
     name = '1D energy XES'
     arrays = OrderedDict()
+    icon = "doc/_images/icon-xes-1D.png"
     arrays['energy'] = dict(qUnit='eV', role='x')
     arrays['xes'] = dict(
         qLabel='XES←', qUnit='counts', role='yleft',
