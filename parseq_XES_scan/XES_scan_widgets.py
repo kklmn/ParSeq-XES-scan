@@ -237,7 +237,8 @@ class Tr3Widget(PropWidget):
         layout.addWidget(self.calibrationUse)
 
         self.thetaRangeWidget = AutoRangeWidget(
-            self, plot, u'set θ range', '', u'θ-range', "#da70d6",
+            self, plot, u'set θ range (this is not energy range!)', '',
+            u'θ-range', "#da70d6",
             "{0[0]:.3f}, {0[1]:.3f}", self.initThetaRange)
         self.registerPropWidget(self.thetaRangeWidget, 'θ-range', 'thetaRange')
         layout.addWidget(self.thetaRangeWidget)
@@ -335,8 +336,7 @@ class Tr3Widget(PropWidget):
                 continue
             dtparams = data.transformParams
             z = 1 if data in csi.selectedItems else 0
-            if dtparams['calibrationPoly'] is not None and \
-                    dtparams['calibrationFind']:
+            if dtparams['calibrationPoly'] is not None:
                 wasCalibrated = True
 
             legend = '{0}.rce'.format(data.alias)

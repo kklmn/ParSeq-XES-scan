@@ -3,9 +3,13 @@ __author__ = "Konstantin Klementiev"
 __date__ = "9 Jan 2025"
 # !!! SEE CODERULES.TXT !!!
 
-import os, sys; sys.path.append('..')  # analysis:ignore
 import argparse
 
+import os
+import sys
+top = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if top not in sys.path:
+    sys.path.append(top)
 import parseq.core.singletons as csi
 
 
