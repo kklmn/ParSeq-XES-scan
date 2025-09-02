@@ -4,7 +4,7 @@ __date__ = "28 Apr 2024"
 # !!! SEE CODERULES.TXT !!!
 
 import numpy as np
-# from functools import partial
+from functools import partial
 
 from silx.gui import qt
 
@@ -91,6 +91,26 @@ class Tr2Widget(PropWidget):
 
         # self.extraPlotSetup()
 
+    def extraContextMenu(self, menu, widget):
+        try:
+            if widget is self.roiWidget.table:
+                man = self.roiWidget.roiManager
+                roi = man.getCurrentRoi()
+                if roi is not None:
+                    if roi.isEditable():
+                        menu.addSeparator()
+                        removeAction = qt.QAction(menu)
+                        removeAction.setText("Remove %s" % roi.getName())
+                        callback = partial(man.removeRoi, roi)
+                        removeAction.triggered.connect(callback)
+                        icon = self.style().standardIcon(
+                            qt.QStyle.SP_DialogCancelButton)
+                        removeAction.setIcon(icon)
+                        menu.addAction(removeAction)
+        except Exception as e:
+            print(e)
+            pass
+
     def acceptBand(self):
         self.roiWidget.syncRoi()
         self.updateProp('bandROI', self.roiWidget.getCurrentRoi())
@@ -160,13 +180,16 @@ class Tr3Widget(PropWidget):
         self.bandUse.setFlat(False)
         self.bandUse.setTitle(u'use θ–2θ band masking')
         self.bandUse.setCheckable(True)
-        self.registerPropWidget(self.bandUse, self.bandUse.title(), 'bandUse')
+        self.registerPropWidget(
+            self.bandUse, self.bandUse.title(), 'bandUse',
+            transformNames='mask and get XES band (reduced)')
         # self.bandUse.setEnabled(False)
         layoutB = qt.QVBoxLayout()
         self.bandFractionalPixel = qt.QCheckBox('allow fractional pixels')
         self.registerPropWidget(
             self.bandFractionalPixel, self.bandFractionalPixel.text(),
-            'bandFractionalPixels')
+            'bandFractionalPixels',
+            transformNames='mask and get XES band (reduced)')
         layoutB.addWidget(self.bandFractionalPixel)
         self.bandUse.setLayout(layoutB)
         layout.addWidget(self.bandUse)
@@ -176,7 +199,8 @@ class Tr3Widget(PropWidget):
         subtractBknd.setTitle(u'subtract linear background')
         subtractBknd.setCheckable(True)
         self.registerPropWidget(
-            subtractBknd, subtractBknd.title(), 'subtractLine')
+            subtractBknd, subtractBknd.title(), 'subtractLine',
+            transformNames='mask and get XES band (reduced)')
         layoutS = qt.QHBoxLayout()
         subtractLabel = qt.QLabel('relative noise level')
         layoutS.addWidget(subtractLabel)
@@ -186,9 +210,12 @@ class Tr3Widget(PropWidget):
         subtractLevel.setSingleStep(0.01)
         subtractLevel.setDecimals(2)
         subtractLevel.setAccelerated(True)
-        self.registerPropWidget(subtractLevel, 'relative noise level',
-                                'relativeBackgroundHeight')
+        self.registerPropWidget(
+            subtractLevel, 'relative noise level',
+            'relativeBackgroundHeight',
+            transformNames='mask and get XES band (reduced)')
         layoutS.addWidget(subtractLevel)
+        layoutS.addStretch()
         subtractBknd.setLayout(layoutS)
         layout.addWidget(subtractBknd)
 
@@ -217,14 +244,15 @@ class Tr3Widget(PropWidget):
 
         self.calibrateEnergyWidget.autoSetButton.clicked.connect(self.autoSet)
         self.calibrateEnergyWidget.autoSetButton.setToolTip(
-            'find a data group within the same data group that has\n'
+            'Find a data group within the same data group that has\n'
             '"calib" or "elast" in its name and\n'
-            'analyze data names for presence of a number separated by "_"')
+            'analyze data names for presence of a number separated by "_".\n'
+            'That number will be calibration energy in eV.')
         self.calibrateEnergyWidget.acceptButton.clicked.connect(self.accept)
         self.registerPropWidget(
             [self.calibrateEnergyWidget.acceptButton,
              self.calibrateEnergyWidget.table], 'energy calibration',
-            'calibrationPoly')
+            'calibrationPoly', transformNames='get XES and calibrate energy')
         self.registerStatusLabel(self.calibrateEnergyWidget,
                                  'transformParams.calibrationData.FWHM')
 
@@ -235,6 +263,33 @@ class Tr3Widget(PropWidget):
         self.calibrationUse = qt.QCheckBox('apply energy calibration')
         self.calibrationUse.setEnabled(False)
         layout.addWidget(self.calibrationUse)
+
+        rebinPanel = qt.QGroupBox(self)
+        rebinPanel.setFlat(False)
+        rebinPanel.setTitle('rebin XES')
+        rebinPanel.setCheckable(True)
+        self.registerPropWidget(
+            rebinPanel, rebinPanel.title(), 'rebinWant',
+            transformNames='mask and get XES band (reduced)')
+        layoutR = qt.QVBoxLayout()
+        layoutL = qt.QHBoxLayout()
+        binsLabel = qt.QLabel('N bins')
+        layoutL.addWidget(binsLabel)
+        bins = qt.QSpinBox()
+        bins.setToolTip(u'0 ≤ cutoff ≤ 1e8')
+        bins.setMinimum(10)
+        bins.setMaximum(10000)
+        bins.setSingleStep(10)
+        self.registerPropWidget(
+            [bins, binsLabel], binsLabel.text(), 'binN',
+            transformNames='mask and get XES band (reduced)')
+        layoutL.addWidget(bins)
+        layoutL.addStretch()
+        layoutR.addLayout(layoutL)
+        rebinPanel.setLayout(layoutR)
+        self.registerPropGroup(
+            rebinPanel, [bins, rebinPanel], 'rebin properties')
+        layout.addWidget(rebinPanel)
 
         self.thetaRangeWidget = AutoRangeWidget(
             self, plot, u'set θ range (this is not energy range!)', '',
