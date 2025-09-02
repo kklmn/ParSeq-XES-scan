@@ -7,6 +7,7 @@ import numpy as np
 # import time
 
 # from scipy.integrate import trapezoid
+from scipy.optimize import curve_fit
 
 import sys; sys.path.append('..')  # analysis:ignore
 from parseq.core import transforms as ctr
@@ -15,7 +16,7 @@ from parseq.core.logger import logger, syslogger
 from parseq.utils import math as uma
 from parseq.third_party import xrt
 
-cpus = 'half'  # can be int or 'all' or 'half'
+cpus = 1  # can be int or 'all' or 'half'
 
 
 class Tr2(ctr.Transform):
@@ -30,7 +31,8 @@ class Tr2(ctr.Transform):
     # nProcesses = cpus
     # inArrays and outArrays needed only for multiprocessing/multithreading:
     inArrays = ['xes2DRaw', 'theta', 'i0']
-    outArrays = ['xes2D', 'xes', 'theta_bottom', 'xes_bottom']
+    outArrays = ['xes2D', 'xes', 'theta_bottom', 'xes_bottom',
+                 'thetaCut', 'theta_bottomCut']
 
     @staticmethod
     def run_main(data):
@@ -44,12 +46,6 @@ class Tr2(ctr.Transform):
             dtparams['cutoffMaxBelow'] = data.xes2D.max()
         data.xes2D *= data.i0.max() / data.i0[:, None]
 
-        data.xes = data.xes2D.sum(axis=1)
-        data.theta_bottom = \
-            (np.arange(data.xes2D.shape[1]) / (data.xes2D.shape[1]-1) *
-             (data.theta[-1]-data.theta[0])) + data.theta[0]
-        data.xes_bottom = data.xes2D.sum(axis=0)
-
         try:
             if dtparams['bandFind']:
                 roi = dtparams['bandROI']
@@ -62,6 +58,83 @@ class Tr2(ctr.Transform):
         except Exception:
             dtparams['bandLine'] = None
 
+        if dtparams['bandLine'] is not None and dtparams['bandUse']:
+            k, b, w = dtparams['bandLine']
+            dataCut = np.array(data.xes2D, dtype=np.float32)
+            u, v = np.meshgrid(np.arange(data.xes2D.shape[1]), data.theta)
+            if len(data.theta) > 1:
+                dt = abs(data.theta[-1]-data.theta[0]) / (len(data.theta)-1)
+            else:
+                dt = 1
+            vm = v - k*u - b - w/2
+            vp = v - k*u - b + w/2
+            if dtparams['bandFractionalPixels'] and (dt > 0):
+                dataCut[vm > dt] = 0
+                dataCut[vp < -dt] = 0
+                vmWherePartial = (vm > 0) & (vm < dt)
+                dataCut[vmWherePartial] *= vm[vmWherePartial] / dt
+                vpWherePartial = (vp > -dt) & (vp < 0)
+                dataCut[vpWherePartial] *= -vp[vpWherePartial] / dt
+            else:
+                dataCut[vm > 0] = 0
+                dataCut[vp < 0] = 0
+            data.xes = dataCut.sum(axis=1)
+
+            data.xes_bottom = dataCut.sum(axis=0)
+            data.theta_bottom = k*np.arange(data.xes2D.shape[1]) + b
+
+            # cutting of the incomplete ends:
+            mline = k*np.arange(data.xes2D.shape[1]) + b
+            gd = (mline - w/2 > data.theta[0]) & (mline + w/2 < data.theta[-1])
+            data.xes_bottom = data.xes_bottom[gd]
+            data.theta_bottom = data.theta_bottom[gd]
+        else:
+            data.xes = data.xes2D.sum(axis=1)
+            data.theta_bottom = \
+                (np.arange(data.xes2D.shape[1]) / (data.xes2D.shape[1]-1) *
+                 (data.theta[-1]-data.theta[0])) + data.theta[0]
+            data.xes_bottom = data.xes2D.sum(axis=0)
+
+        try:
+            if dtparams['rebinWant']:
+                binN = dtparams['binN']
+                theta = data.theta_bottom
+                xes = data.xes_bottom
+                d = (theta[-1]-theta[0]) / binN
+                bins = np.linspace(theta[0]-d*0.5, theta[-1]+d*0.5, binN)
+                histNorm = np.histogram(theta, bins)[0]
+                good = histNorm > 0
+                histtheta = np.histogram(theta, bins, weights=theta)[0]
+                data.theta_bottom = histtheta[good] / histNorm[good]
+                histxes = np.histogram(theta, bins, weights=xes)[0]
+                data.xes_bottom = histxes[good] / histNorm[good]
+        except Exception:
+            data.xes = data.xes2D.sum(axis=1)
+            data.theta_bottom = \
+                (np.arange(data.xes2D.shape[1]) / (data.xes2D.shape[1]-1) *
+                 (data.theta[-1]-data.theta[0])) + data.theta[0]
+            data.xes_bottom = data.xes2D.sum(axis=0)
+
+        data.thetaCut = data.theta
+        data.theta_bottomCut = data.theta_bottom
+        data.energy = data.theta
+        data.energy_bottom = data.theta_bottom
+
+        if dtparams['thetaRange']:
+            thetaMin, thetaMax = dtparams['thetaRange']
+            if (data.theta[-1] > thetaMin) and (data.theta[0] < thetaMax):
+                whereTh = (data.theta >= thetaMin) & (data.theta <= thetaMax)
+                data.thetaCut = data.theta[whereTh]
+                data.energy = data.theta[whereTh]
+                data.xes = data.xes[whereTh]
+            if ((data.theta_bottom[-1] > thetaMin) and
+                    (data.theta_bottom[0] < thetaMax)):
+                whereTh = ((data.theta_bottom >= thetaMin) &
+                           (data.theta_bottom <= thetaMax))
+                data.theta_bottomCut = data.theta_bottom[whereTh]
+                data.energy_bottom = data.theta_bottom[whereTh]
+                data.xes_bottom = data.xes_bottom[whereTh]
+
         return True
 
 
@@ -72,7 +145,8 @@ class Tr3(ctr.Transform):
         subtractLine=True, relativeBackgroundHeight=0.1,
         thetaRange=[],
         calibrationFind=False, calibrationWhichXES='XES↓', calibrationData={},
-        calibrationHalfPeakWidthSteps=7, calibrationPoly=None)
+        calibrationHalfPeakWidthSteps=2, calibrationPoly=None,
+        rebinWant=True, binN=100)
 
     @staticmethod
     def make_calibration(data, allData):
@@ -100,9 +174,11 @@ class Tr3(ctr.Transform):
                 else:
                     raise ValueError('unknown "calibrationWhichXES"')
                 iel = xes.argmax()
-                peak = slice(max(iel-pw, 0), iel+pw+1)
-                mel = (xes*theta)[peak].sum() / xes[peak].sum()
-                thetas.append(mel)
+                peak = slice(max(iel-pw, 0), min(iel+pw+1, len(theta)-1))
+                # peakpos = (xes*theta)[peak].sum() / xes[peak].sum()
+                a, b, c = np.polyfit(theta[peak], xes[peak], 2)
+                peakpos = -b / (2*a)
+                thetas.append(peakpos)
 
             dtparams['calibrationPoly'] = np.polyfit(thetas, cd['energy'], 1)
             data.energy = np.polyval(
@@ -156,62 +232,6 @@ class Tr3(ctr.Transform):
     @staticmethod
     def run_main(data, allData):
         dtparams = data.transformParams
-
-        if dtparams['bandLine'] is not None and dtparams['bandUse']:
-            k, b, w = dtparams['bandLine']
-            dataCut = np.array(data.xes2D, dtype=np.float32)
-            u, v = np.meshgrid(np.arange(data.xes2D.shape[1]), data.theta)
-            if len(data.theta) > 1:
-                dt = abs(data.theta[-1]-data.theta[0]) / (len(data.theta)-1)
-            else:
-                dt = 1
-            vm = v - k*u - b - w/2
-            vp = v - k*u - b + w/2
-            if dtparams['bandFractionalPixels'] and (dt > 0):
-                dataCut[vm > dt] = 0
-                dataCut[vp < -dt] = 0
-                vmWherePartial = (vm > 0) & (vm < dt)
-                dataCut[vmWherePartial] *= vm[vmWherePartial] / dt
-                vpWherePartial = (vp > -dt) & (vp < 0)
-                dataCut[vpWherePartial] *= -vp[vpWherePartial] / dt
-            else:
-                dataCut[vm > 0] = 0
-                dataCut[vp < 0] = 0
-            data.xes = dataCut.sum(axis=1)
-
-            data.xes_bottom = dataCut.sum(axis=0)
-            data.theta_bottom = k*np.arange(data.xes2D.shape[1]) + b
-
-            # cutting of the incomplete ends:
-            mline = k*np.arange(data.xes2D.shape[1]) + b
-            gd = (mline - w/2 > data.theta[0]) & (mline + w/2 < data.theta[-1])
-            data.xes_bottom = data.xes_bottom[gd]
-            data.theta_bottom = data.theta_bottom[gd]
-        else:
-            data.xes = data.xes2D.sum(axis=1)
-            data.theta_bottom = \
-                (np.arange(data.xes2D.shape[1]) / (data.xes2D.shape[1]-1) *
-                 (data.theta[-1]-data.theta[0])) + data.theta[0]
-            data.xes_bottom = data.xes2D.sum(axis=0)
-
-        data.thetaCut = data.theta
-        data.theta_bottomCut = data.theta_bottom
-        data.energy = data.theta
-        data.energy_bottom = data.theta_bottom
-        if dtparams['thetaRange']:
-            thetaMin, thetaMax = dtparams['thetaRange']
-            if (data.theta[-1] > thetaMin) and (data.theta[0] < thetaMax):
-                whereTh = (data.theta >= thetaMin) & (data.theta <= thetaMax)
-                data.thetaCut = data.theta[whereTh]
-                data.energy = data.theta[whereTh]
-                data.xes = data.xes[whereTh]
-            if ((data.theta_bottom[-1] > thetaMin) and
-                    (data.theta_bottom[0] < thetaMax)):
-                whereTh = ((data.theta_bottom >= thetaMin) &
-                           (data.theta_bottom <= thetaMax))
-                data.theta_bottomCut = data.theta_bottom[whereTh]
-                data.energy_bottom = data.theta_bottom[whereTh]
-                data.xes_bottom = data.xes_bottom[whereTh]
 
         for sp in allData:
             if hasattr(sp, 'rc'):
