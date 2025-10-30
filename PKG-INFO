@@ -1,6 +1,6 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: parseq_XES_scan
-Version: 2024.11.0
+Version: 2025.10.0
 Summary: A pipeline for data processing of XES theta scans
 Author: Konstantin Klementiev
 Author-email: konstantin.klementiev@gmail.com
@@ -23,10 +23,21 @@ License-File: LICENSE
 Requires-Dist: numpy>=1.8.0
 Requires-Dist: scipy>=0.17.0
 Requires-Dist: matplotlib>=2.0.0
-Requires-Dist: sphinx>=1.6.2
 Requires-Dist: h5py
 Requires-Dist: silx>=1.1.0
 Requires-Dist: hdf5plugin
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: keywords
+Dynamic: license
+Dynamic: license-file
+Dynamic: platform
+Dynamic: project-url
+Dynamic: requires-dist
+Dynamic: summary
 
 
 Scanning XES

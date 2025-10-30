@@ -142,7 +142,7 @@
       </div>
       <div class="pipeline-transforms">
         <div class="pipeline-tr" style="color: #1f77b4; text-shadow: 1px 1.5px 3px #1f77b499;">
-            mask and get XES band (reduced)&nbsp(10 threads)</div>
+            mask and get XES band (reduced)</div>
 
         <svg><path id="arc_0" node=pn_2D_theta_scan class="shadow" style="stroke: #1f77b4; marker-end: url(#arrow0); filter: url(#flt0)"  />
         </svg>
