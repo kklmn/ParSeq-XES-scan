@@ -8,6 +8,8 @@ import numpy as np
 
 # from scipy.integrate import trapezoid
 from scipy.optimize import curve_fit
+from scipy.interpolate import griddata
+from skimage.transform import warp, resize
 
 import sys; sys.path.append('..')  # analysis:ignore
 from parseq.core import transforms as ctr
@@ -35,6 +37,15 @@ class Tr2(ctr.Transform):
                  'thetaCut', 'theta_bottomCut']
 
     @staticmethod
+    def shear(image, theta, k, b, direction=1):
+        def inv_map(xy):
+            xy[:, 0] += (ky*xy[:, 1] + by - thetaMid) / k * direction
+            return xy
+        thetaMid = (theta[0] + theta[-1]) * 0.5
+        ky, by = uma.line((0, image.shape[0]-1), (theta[0], theta[-1]))
+        return warp(image, inv_map)
+
+    @staticmethod
     def run_main(data):
         dtparams = data.transformParams
         # data.xes = data.xes2D.sum(axis=1)
@@ -58,40 +69,46 @@ class Tr2(ctr.Transform):
         except Exception:
             dtparams['bandLine'] = None
 
+        merid = np.arange(data.xes2D.shape[1])
         if dtparams['bandLine'] is not None and dtparams['bandUse']:
             k, b, w = dtparams['bandLine']
             dataCut = np.array(data.xes2D, dtype=np.float32)
-            u, v = np.meshgrid(np.arange(data.xes2D.shape[1]), data.theta)
+            u, v = np.meshgrid(merid, data.theta)
             if len(data.theta) > 1:
-                dt = abs(data.theta[-1]-data.theta[0]) / (len(data.theta)-1)
+                dy = abs(data.theta[-1]-data.theta[0]) / (len(data.theta)-1)
             else:
-                dt = 1
-            vm = v - k*u - b - w/2
-            vp = v - k*u - b + w/2
-            if dtparams['bandFractionalPixels'] and (dt > 0):
-                dataCut[vm > dt] = 0
-                dataCut[vp < -dt] = 0
-                vmWherePartial = (vm > 0) & (vm < dt)
-                dataCut[vmWherePartial] *= vm[vmWherePartial] / dt
-                vpWherePartial = (vp > -dt) & (vp < 0)
-                dataCut[vpWherePartial] *= -vp[vpWherePartial] / dt
+                dy = 1
+
+            y = k*u + b
+            dataCut[v > y + w/2] = 0  # above
+            dataCut[v < y - w/2] = 0  # below
+
+            if dtparams['bandFractionalPixels'] and (dy > 0):
+                xes2Ds = Tr2.shear(data.xes2D, data.theta, k, b)
+                n = data.xes2D.shape[1]
+                xes2Dsd = resize(xes2Ds, (n, n), order=1)
+                xes2Dd = Tr2.shear(xes2Dsd, data.theta, k, b, direction=-1)
+                denseTheta = np.linspace(data.theta[0], data.theta[-1], n)
+                uD, vD = np.meshgrid(merid, denseTheta)
+                yD = k*uD + b
+                xes2Dd[vD > yD + w/2] = 0  # above
+                xes2Dd[vD < yD - w/2] = 0  # below
+                data.xes_bottom = xes2Dd.sum(axis=0)
             else:
-                dataCut[vm > 0] = 0
-                dataCut[vp < 0] = 0
+                data.xes_bottom = dataCut.sum(axis=0)
+
             data.xes = dataCut.sum(axis=1)
+            data.theta_bottom = k*merid + b
 
-            data.xes_bottom = dataCut.sum(axis=0)
-            data.theta_bottom = k*np.arange(data.xes2D.shape[1]) + b
-
-            # cutting of the incomplete ends:
-            mline = k*np.arange(data.xes2D.shape[1]) + b
+            # cut incomplete ends:
+            mline = k*merid + b
             gd = (mline - w/2 > data.theta[0]) & (mline + w/2 < data.theta[-1])
             data.xes_bottom = data.xes_bottom[gd]
             data.theta_bottom = data.theta_bottom[gd]
         else:
             data.xes = data.xes2D.sum(axis=1)
             data.theta_bottom = \
-                (np.arange(data.xes2D.shape[1]) / (data.xes2D.shape[1]-1) *
+                (merid / (data.xes2D.shape[1]-1) *
                  (data.theta[-1]-data.theta[0])) + data.theta[0]
             data.xes_bottom = data.xes2D.sum(axis=0)
 
@@ -111,7 +128,7 @@ class Tr2(ctr.Transform):
         except Exception:
             data.xes = data.xes2D.sum(axis=1)
             data.theta_bottom = \
-                (np.arange(data.xes2D.shape[1]) / (data.xes2D.shape[1]-1) *
+                (merid / (data.xes2D.shape[1]-1) *
                  (data.theta[-1]-data.theta[0])) + data.theta[0]
             data.xes_bottom = data.xes2D.sum(axis=0)
 
