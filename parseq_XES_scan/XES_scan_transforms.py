@@ -94,6 +94,8 @@ class Tr2(ctr.Transform):
                 xes2Dd[vD > yD + w/2] = 0  # above
                 xes2Dd[vD < yD - w/2] = 0  # below
                 data.xes_bottom = xes2Dd.sum(axis=0)
+                # preserve total counts in the band:
+                data.xes_bottom *= dataCut.sum() / data.xes_bottom.sum()
             else:
                 data.xes_bottom = dataCut.sum(axis=0)
 
