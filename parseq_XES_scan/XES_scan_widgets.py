@@ -401,11 +401,15 @@ class Tr3Widget(PropWidget):
                     norm = y.max()
                     if norm > 0:
                         y /= norm
-                plot.addCurve(
-                    data.rce, y, **self.plotParams['rce'],
-                    z=z, legend=legend, resetzoom=False)
                 curve = plot.getCurve(legend)
-                curve.setSymbolSize(3)
+                if curve is None:
+                    curve = plot.addCurve(
+                        data.rce, y, **self.plotParams['rce'],
+                        z=z, legend=legend, resetzoom=False)
+                    curve.setSymbolSize(3)
+                else:
+                    curve.setData(data.rce, y)
+                    curve.setZValue(z)
 
             # legend = '{0}.bknd'.format(data.alias)
             # if not dtparams['subtractLine'] and data.xesBknd is not None:
