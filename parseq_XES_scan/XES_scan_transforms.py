@@ -95,7 +95,9 @@ class Tr2(ctr.Transform):
                 xes2Dd[vD < yD - w/2] = 0  # below
                 data.xes_bottom = xes2Dd.sum(axis=0)
                 # preserve total counts in the band:
-                data.xes_bottom *= dataCut.sum() / data.xes_bottom.sum()
+                botSum = data.xes_bottom.sum()
+                if botSum > 0:
+                    data.xes_bottom *= dataCut.sum() / botSum
             else:
                 data.xes_bottom = dataCut.sum(axis=0)
 
@@ -146,13 +148,16 @@ class Tr2(ctr.Transform):
                 data.thetaCut = data.theta[whereTh]
                 data.energy = data.theta[whereTh]
                 data.xes = data.xes[whereTh]
-            if ((data.theta_bottom[-1] > thetaMin) and
-                    (data.theta_bottom[0] < thetaMax)):
-                whereTh = ((data.theta_bottom >= thetaMin) &
-                           (data.theta_bottom <= thetaMax))
-                data.theta_bottomCut = data.theta_bottom[whereTh]
-                data.energy_bottom = data.theta_bottom[whereTh]
-                data.xes_bottom = data.xes_bottom[whereTh]
+            try:
+                if ((data.theta_bottom[-1] > thetaMin) and
+                        (data.theta_bottom[0] < thetaMax)):
+                    whereTh = ((data.theta_bottom >= thetaMin) &
+                               (data.theta_bottom <= thetaMax))
+                    data.theta_bottomCut = data.theta_bottom[whereTh]
+                    data.energy_bottom = data.theta_bottom[whereTh]
+                    data.xes_bottom = data.xes_bottom[whereTh]
+            except IndexError:
+                pass
 
         return True
 

@@ -313,7 +313,7 @@ class Tr3Widget(PropWidget):
         try:
             ylim[1] = 1 if value else max(
                 data.xes.max(), data.xes_bottom.max())
-        except ValueError:  # if data.xes is zero-sized
+        except ValueError, AttributeError:  # if data.xes is zero-sized
             return
         plot.getYAxis().setLimits(*ylim)
         csi.model.needReplot.emit(False, True, 'normalizeSlot')
