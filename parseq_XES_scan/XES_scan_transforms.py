@@ -43,7 +43,7 @@ class Tr2(ctr.Transform):
             return xy
         thetaMid = (theta[0] + theta[-1]) * 0.5
         ky, by = uma.line((0, image.shape[0]-1), (theta[0], theta[-1]))
-        return warp(image, inv_map)
+        return warp(image, inv_map, mode='edge', preserve_range=True)
 
     @staticmethod
     def run_main(data):
