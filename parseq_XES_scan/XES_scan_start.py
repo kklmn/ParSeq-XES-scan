@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 __author__ = "Konstantin Klementiev"
-__date__ = "9 Jan 2025"
+__date__ = "17 Apr 2026"
 # !!! SEE CODERULES.TXT !!!
 
 import argparse
@@ -10,6 +10,7 @@ import sys
 top = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if top not in sys.path:
     sys.path.append(top)
+
 import parseq.core.singletons as csi
 
 
@@ -46,7 +47,7 @@ def main(projectFile=None, withGUI=True):
         plt.show()
 
 
-if __name__ == '__main__':
+def run():
     parser = argparse.ArgumentParser(
         description="starter of parseq_XES_scan")
     parser.add_argument("-p", "--projectFile", metavar='NNN.pspj',
@@ -64,3 +65,7 @@ if __name__ == '__main__':
         csi.plotBackend = args.plotBackend
     csi.DEBUG_LEVEL = args.verbosity
     main(projectFile=args.projectFile, withGUI=not args.noGUI)
+
+
+if __name__ == '__main__':
+    run()

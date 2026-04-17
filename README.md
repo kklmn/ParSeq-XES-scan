@@ -26,8 +26,10 @@ Dependencies
 How to use
 ----------
 
-Either install ParSeq and this pipeline application by their installers or put
-their main folders near by (i.e. in the same folder) and run
-`python XES_scan_start.py`. You can try it with `--test` to load test data
-and/or `--noGUI` but an assumed pattern is to load a project file; use the test
-project file located in `parseq_XES_scan/saved`.
+Either install ParSeq and this pipeline package by their installers
+(`python -m pip install .`) or run without installation by putting their
+folders `parseq` and `parseq_XES_scan` in the same folder and run
+`python XES_scan_start.py --help` to see the accepted run options. Run the
+pipeline as `python XES_scan_start.py` or by `parseq-XES` command if the
+packages were installed. Load a ready project from `saved` folder from the GUI
+or from the starting command line.

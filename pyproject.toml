@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "parseq_XES_scan"
+description = "A ParSeq pipeline for data processing of XES theta scans"
+dynamic = ["version"]
+readme = "README.md"
+authors = [
+    {name = "Konstantin Klementiev", email = "konstantin.klementiev@gmail.com"}
+]
+keywords = ["data-analysis", "pipeline", "framework", "gui", "spectroscopy"]
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: User Interfaces",
+]
+requires-python = ">=3.7"
+dependencies = [
+    "numpy>=1.8.0",
+    "scipy>=1.17.0",
+    "matplotlib>=2.0.0",
+    "h5py",
+    "silx>=2.2.0",
+    "hdf5plugin",
+]
+
+[project.urls]
+Repository = "https://github.com/kklmn/ParSeq-XES-scan"
+Issues = "https://github.com/kklmn/ParSeq-XES-scan/issues"
+
+[project.scripts]
+parseq-XES = "parseq_XES_scan.XES_scan_start:run"
+
+[tool.setuptools.dynamic]
+version = {attr = "parseq_XES_scan.version.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["parseq_XES_scan"]
+
+[tool.setuptools.package-data]
+parseq_XES_scan = ['data/*.*', 'doc/_images/*.*', 'saved/*.*']
