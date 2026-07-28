@@ -170,7 +170,13 @@ class Tr3(ctr.Transform):
         thetaRange=[],
         calibrationFind=False, calibrationWhichXES='XES↓', calibrationData={},
         calibrationHalfPeakWidthSteps=2, calibrationPoly=None,
-        rebinWant=True, binN=100)
+        rebinWant=True, binN=100,
+        normalizeWant=False, normalizeData=dict(method='maximum', base=None),
+        maxXES=0, maxXESBottom=0,
+        )
+
+    dontSaveParamsWhenUnused = {  # paramName: paramSwitch
+        'normalizeData': 'normalizeWant'}
 
     @staticmethod
     def make_calibration(data, allData):
@@ -324,5 +330,29 @@ class Tr3(ctr.Transform):
             data.fwhm_bottom = uma.fwhm(data.energy_bottom, data.xes_bottom)
         except IndexError:
             data.fwhm_bottom = 0
+
+        dtparams['maxXES'] = data.xes.max()
+        dtparams['maxXESBottom'] = data.xes_bottom.max()
+        if dtparams['normalizeWant']:
+            normalizeData = dtparams['normalizeData']
+            aliasNorm = normalizeData['base']
+            if aliasNorm is None:
+                sp = data
+            else:
+                for sp in allData:
+                    if sp.alias == aliasNorm:
+                        break
+                else:
+                    raise ValueError(
+                        "unknown reference spectrum {0}".format(aliasNorm))
+
+            try:
+                data.xes /= sp.transformParams['maxXES']
+            except Exception:
+                pass
+            try:
+                data.xes_bottom /= sp.transformParams['maxXESBottom']
+            except Exception:
+                pass
 
         return True

@@ -11,12 +11,13 @@ from silx.gui import qt
 import sys; sys.path.append('..')  # analysis:ignore
 from parseq.core import singletons as csi
 from parseq.core import commons as cco
+
 from parseq.gui.propWidget import PropWidget
 from parseq.gui.calibrateEnergy import CalibrateEnergyWidget
 from parseq.gui.roi import RoiWidget, AutoRangeWidget
 from parseq.gui.gcommons import StateButtonsExclusive
 
-# from . import XES_scan_transforms as xtr
+from . import XES_scan_transforms as xtr
 
 
 class Tr2Widget(PropWidget):
@@ -162,8 +163,6 @@ class Tr3Widget(PropWidget):
     view.
     """
 
-    properties = {'normalize': False}
-
     extraLines = ('rce',)
     plotParams = {
         # 'bknd': {'linewidth': 2, 'linestyle': '-'},
@@ -173,6 +172,7 @@ class Tr3Widget(PropWidget):
     def __init__(self, parent=None, node=None):
         super().__init__(parent, node)
         plot = self.node.widget.plot
+        self.pickReason = None
 
         layout = qt.QVBoxLayout()
 
@@ -219,10 +219,38 @@ class Tr3Widget(PropWidget):
         subtractBknd.setLayout(layoutS)
         layout.addWidget(subtractBknd)
 
-        self.checkBoxNormalize = qt.QCheckBox('show normalized')
-        self.checkBoxNormalize.setChecked(self.properties['normalize'])
-        self.checkBoxNormalize.toggled.connect(self.normalizeSlot)
-        layout.addWidget(self.checkBoxNormalize)
+        normalize = qt.QGroupBox()
+        normalize.setFlat(False)
+        normalize.setTitle(u'normalize')
+        normalize.setCheckable(True)
+        self.registerPropWidget(
+            normalize, 'normalize', 'normalizeWant',
+            transformNames='mask and get XES band (reduced)')
+        layoutN = qt.QVBoxLayout()
+        layoutNM = qt.QHBoxLayout()
+        maxLeft = qt.QLabel('max XES←')
+        layoutNM.addWidget(maxLeft)
+        maxLeftValue = qt.QLabel()
+        self.registerStatusLabel(maxLeftValue, 'maxXES', textFormat='.0f')
+        layoutNM.addWidget(maxLeftValue)
+        maxBottom = qt.QLabel('max XES↓')
+        layoutNM.addWidget(maxBottom)
+        maxBottomValue = qt.QLabel()
+        self.registerStatusLabel(maxBottomValue, 'maxXESBottom',
+                                 textFormat='.0f')
+        layoutNM.addWidget(maxBottomValue)
+        layoutN.addLayout(layoutNM)
+        layoutNS = qt.QHBoxLayout()
+        self.normalizeTo = qt.QCheckBox('to another spectrum (pick)')
+        self.normalizeTo.toggled.connect(self.normalizeToSlot)
+        layoutNS.addWidget(self.normalizeTo)
+        self.normalizeToAlias = qt.QLabel()
+        layoutNS.addWidget(self.normalizeToAlias)
+        self.registerStatusLabel(
+            self.normalizeToAlias, 'transformParams.normalizeData.base')
+        layoutN.addLayout(layoutNS)
+        normalize.setLayout(layoutN)
+        layout.addWidget(normalize)
 
         calibrationPanel = qt.QGroupBox(self)
         calibrationPanel.setFlat(False)
@@ -252,7 +280,8 @@ class Tr3Widget(PropWidget):
         self.registerPropWidget(
             [self.calibrateEnergyWidget.acceptButton,
              self.calibrateEnergyWidget.table], 'energy calibration',
-            'calibrationPoly', transformNames='get XES and calibrate energy')
+            'calibrationPoly',
+            transformNames='mask and get XES band (reduced)')
         self.registerStatusLabel(self.calibrateEnergyWidget,
                                  'transformParams.calibrationData.FWHM')
 
@@ -303,20 +332,33 @@ class Tr3Widget(PropWidget):
         # self.setSizePolicy(qt.QSizePolicy.Minimum, qt.QSizePolicy.Minimum)
         self.calibrateEnergyWidget.resize(0, 0)
 
-    def normalizeSlot(self, value):
+    def normalizeToSlot(self, value):
         if len(csi.selectedItems) == 0:
             return
-        self.properties['normalize'] = value
-        plot = self.node.widget.plot
-        ylim = list(plot.getYAxis().getLimits())
-        data = csi.selectedItems[0]
-        try:
-            ylim[1] = 1 if value else max(
-                data.xes.max(), data.xes_bottom.max())
-        except ValueError, AttributeError:  # if data.xes is zero-sized
+        if value:
+            self.pickReason = 1
+            self.dataBeforePick = list(csi.selectedItems)
+            self.node.widget.preparePickData(self, 'Pick one spectrum')
+        else:
+            for data in csi.selectedItems:
+                dtparams = data.transformParams
+                dtparams['normalizeData']['base'] = None
+                tr = csi.transforms['mask and get XES band (reduced)']
+                tr.run(dataItems=[data])
+            self.replotAllDownstream('mask and get XES band (reduced)')
+
+    def applyPendingProps(self):
+        if len(csi.selectedItems) == 0:
             return
-        plot.getYAxis().setLimits(*ylim)
-        csi.model.needReplot.emit(False, True, 'normalizeSlot')
+        if self.pickReason == 1:
+            names = [item.alias for item in csi.selectedItems]
+            for data in self.dataBeforePick:
+                dtparams = data.transformParams
+                dtparams['normalizeData']['base'] = names[0]
+                tr = csi.transforms['mask and get XES band (reduced)']
+                tr.run(dataItems=[data])
+            self.replotAllDownstream('mask and get XES band (reduced)')
+        super().applyPendingProps()
 
     def initThetaRange(self):
         if len(csi.selectedItems) == 0:
@@ -344,6 +386,11 @@ class Tr3Widget(PropWidget):
             self.calibrateEnergyWidget.setCalibrationData(data)
         self.calibrationUse.setChecked(dtparams['calibrationPoly'] is not None)
 
+        self.normalizeTo.blockSignals(True)
+        self.normalizeTo.setChecked(
+            dtparams['normalizeData']['base'] is not None)
+        self.normalizeTo.blockSignals(False)
+
     def autoSet(self):
         calibs = []
         # groups = csi.dataRootItem.get_groups()
@@ -365,7 +412,10 @@ class Tr3Widget(PropWidget):
         for data in csi.selectedItems:
             dtparams = data.transformParams
             dtparams['calibrationData']['base'] = calibs
-            dtparams['calibrationData']['energy'] = cco.numbers_extract(calibs)
+            energies = cco.numbers_extract(calibs)
+            while len(energies) < len(calibs):
+                energies.append(None)
+            dtparams['calibrationData']['energy'] = energies
             dtparams['calibrationData']['DCM'] = ['Si111' for it in calibs]
             dtparams['calibrationData']['FWHM'] = [0 for it in calibs]
         self.calibrateEnergyWidget.setCalibrationData(data)
@@ -397,7 +447,7 @@ class Tr3Widget(PropWidget):
             legend = '{0}.rce'.format(data.alias)
             if hasattr(data, 'rce'):
                 y = np.array(data.rc)
-                if self.properties['normalize']:
+                if dtparams['normalizeWant']:
                     norm = y.max()
                     if norm > 0:
                         y /= norm
@@ -446,14 +496,3 @@ class Tr3Widget(PropWidget):
             xArrName = xnode.get_prop(xnode.plotYArrays[0], 'plotLabel')
         xlabel = u"{0}{1}".format(xArrName, strUnit)
         plot.setGraphXLabel(xlabel)
-
-    def extraPlotTransform(self, dataItem, xName, x, yName, y):
-        if yName.startswith('xes'):
-            try:
-                if self.properties['normalize']:
-                    norm = y.max()
-                    if norm > 0:
-                        return x, y/norm
-            except Exception:
-                pass
-        return x, y
